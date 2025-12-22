@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+
+<html lang="pt-br">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Gerador de Relatórios - Wilson Sons</title>
+
+   
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+   
+
+  <style>
+    
+        /* Variáveis */
+        :root {
+            --ws-blue: #001c43;
+            --ws-cyan: #00bedd;
+            --bg-gray: #f4f6f9;
+            --danger-color: #dc3545;
+        }
+        
+/* Estilo do Corpo com Imagem de Fundo Sombreada */
+        body {
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            
+            /* O truque do sombreamento: */
+            /* A primeira parte é um gradiente preto com 60% de transparência (0.6) sobre a imagem */
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+                        url('https://www.informativodosportos.com.br/wp-content/uploads/2024/06/Foto-Wilson-Sons-Tecon-Salvador-BA-imagem-aerea.jpg');
+            
+            /* Garante que a imagem cubra toda a tela sem distorcer */
+            background-size: cover;
+            
+            /* Centraliza a imagem */
+            background-position: center;
+            
+            /* (Opcional) Deixa a imagem fixa enquanto a página rola */
+            background-attachment: fixed;
+        }        
+        /* Container Principal */
+        .container {
+            max-width: 900px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            border-radius: 8px; 
+            overflow: hidden;
+            
+            /* ADICIONE ESTA LINHA ABAIXO: */
+            min-height: 90vh; /* Isso força a caixa a ter pelo menos 80% da altura da tela */
+        }
+
+        /* Header */
+        .morpheus-header {
+            background-color: var(--ws-blue); color: white; padding: 20px;
+            text-align: center; display: flex; align-items: center; justify-content: center;
+            gap: 15px; border-bottom: 4px solid var(--ws-cyan);
+            /* Adicione isto dentro da sua tag <style> */
+        h1 { 
+            margin: 0; 
+            color: white; 
+            font-size: 26px; /* <--- Mude este número para aumentar ou diminuir */
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+        }
+        }
+        .morpheus-logo { 
+    height: 60px; 
+    background: white; 
+    padding: 4px; /* Aumentei um pouco o espaço interno */
+    border-radius: 5px; /* Bordas bem mais curvadas */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* Sombreamento suave e moderno */
+    transition: transform 0.3s ease; /* (Opcional) Adiciona um efeito suave se passar o mouse */
+    
+}
+
+/* (Opcional) Efeito extra ao passar o mouse sobre o logo */
+.morpheus-logo:hover {
+    transform: translateY(-2px); /* Levanta ligeiramente o logo */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4); /* Aumenta a sombra */
+}
+
+        /* Seleção */
+        .selection-panel { background: #eef2f7; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid var(--ws-cyan); }
+        .row { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 10px; }
+        .col { flex: 1; min-width: 180px; }
+        
+        /* Inputs */
+        label { font-weight: bold; display: block; margin-bottom: 5px; color: #333; font-size: 13px; }
+        select, input, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        input[readonly] { background-color: #e9ecef; cursor: not-allowed; color: #666; }
+
+        /* --- SINALIZAÇÃO DE ERRO NOS CAMPOS --- */
+        .input-error {
+            border: 2px solid var(--danger-color) !important;
+            background-color: #fff8f8;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15);
+            transition: all 0.3s ease;
+        }
+        .checkbox-grid.input-error {
+            border: 2px solid var(--danger-color);
+            background-color: #fff8f8;
+        }
+
+    /* --- MODAL DE ERRO PROFISSIONAL (DESIGN MODERNO) --- */
+        .error-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.65); z-index: 20000;
+            display: none; justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .error-modal-content {
+            background: #fff; width: 90%; max-width: 480px;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            overflow: hidden; 
+            animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .error-modal-header {
+            background: #fff5f5; /* Fundo avermelhado suave */
+            padding: 25px 30px 20px;
+            display: flex; align-items: center; gap: 15px;
+            border-bottom: 1px solid #ffebeb;
+        }
+        .error-icon-box {
+            width: 42px; height: 42px;
+            background: #fff; 
+            color: var(--danger-color);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; 
+            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.15);
+            flex-shrink: 0;
+        }
+        .error-title {
+            font-size: 18px; font-weight: 700; color: #a51d2a; 
+            margin: 0; letter-spacing: -0.5px;
+        }
+        .error-modal-body {
+            padding: 25px 30px;
+            background: #fff;
+            max-height: 400px; overflow-y: auto;
+        }
+        .error-intro {
+            margin: 0 0 15px 0; color: #555; font-size: 14px; line-height: 1.5;
+        }
+        .error-list {
+            margin: 0; padding: 0; list-style: none;
+        }
+        .error-list li {
+            margin-bottom: 10px; padding: 12px 15px;
+            background: #f9f9f9;
+            border-left: 4px solid var(--danger-color);
+            border-radius: 4px;
+            font-size: 13px; color: #444;
+            display: flex; flex-direction: column; gap: 3px;
+        }
+        .error-list li strong {
+            color: var(--ws-blue); font-weight: 700; font-size: 12px; text-transform: uppercase;
+        }
+        .error-modal-footer {
+            padding: 20px 30px; 
+            text-align: right; 
+            background: #fafafa; 
+            border-top: 1px solid #eee;
+        }
+        .btn-close-error {
+            background: var(--ws-blue); color: white; border: none;
+            padding: 10px 24px; border-radius: 6px; cursor: pointer;
+            font-weight: 600; font-size: 14px;
+            box-shadow: 0 2px 5px rgba(0, 28, 67, 0.2);
+            transition: all 0.2s ease;
+        }
+        .btn-close-error:hover { 
+            background: #002a63; transform: translateY(-1px); 
+            box-shadow: 0 4px 8px rgba(0, 28, 67, 0.3);
+        }
+
+        @keyframes modalFadeIn { from {opacity: 0; transform: scale(0.95) translateY(10px);} to {opacity: 1; transform: scale(1) translateY(0);} }
+
+        /* Botões */
+        button { padding: 12px 20px; cursor: pointer; border: none; border-radius: 5px; font-size: 15px; font-weight: bold; transition: 0.3s; margin: 5px; }
+        .btn-mini-add { background-color: #28a745; color: white; border: none; border-radius: 3px; padding: 2px 8px; font-size: 11px; cursor: pointer; margin-left: 5px; }
+        .dynamic-input { margin-top: 5px; }
+        .btn-group { text-align: center; margin-top: 30px; }
+        .btn-generate { background-color: var(--ws-blue); color: white; width: 100%; padding: 15px; font-size: 18px; }
+        /* --- BOTÕES DE CATEGORIA (NOVO DESIGN) --- */
+        .category-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .cat-btn {
+            flex: 1;
+            padding: 15px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            color: #555;
+            font-size: 14px;
+        }
+        .cat-btn:hover {
+            border-color: var(--ws-cyan);
+            background: #f0fbff;
+            transform: translateY(-2px);
+        }
+        .cat-btn.active {
+            border-color: var(--ws-cyan);
+            background: var(--ws-blue);
+            color: white;
+            box-shadow: 0 4px 10px rgba(0, 190, 221, 0.3);
+        }
+        .cat-btn-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .btn-add { background-color: var(--ws-cyan); color: #fff; font-size: 13px; margin-top: 10px; display: block; width: 100%; }
+        .btn-clear { background-color: #dc3545; color: white; }
+        .btn-cascade { background-color: #ff9800; color: white; }
+        .cascade-actions { text-align: center; margin: 20px 0; padding: 15px; background: #e3f2fd; border-radius: 8px; border: 1px dashed var(--ws-blue); display: none; }
+
+        /* Estilos de Seção */
+        .report-section { border: 1px solid #ddd; padding: 20px; border-radius: 8px; margin-top: 20px; position: relative; background: #fff; border-top: 5px solid var(--ws-cyan); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .report-section h3 { margin-top: 0; color: var(--ws-blue); border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; font-size: 18px; text-transform: uppercase; padding-right: 0; text-align: center; }
+        .section-close-btn { position: absolute; top: 15px; right: 15px; background-color: #fff; color: var(--danger-color); border: 1px solid var(--danger-color); border-radius: 4px; padding: 5px 10px; font-size: 12px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 5px; transition: all 0.2s ease; }
+        .section-close-btn:hover { background-color: var(--danger-color); color: white; }
+
+        /* Fotos e Drag & Drop */
+        .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
+        .photo-slot { border: 2px dashed #ccc; border-radius: 8px; height: 160px; display: flex; justify-content: center; align-items: center; background: #fafafa; cursor: pointer; position: relative; overflow: hidden; }
+        .photo-slot:hover { border-color: var(--ws-blue); }
+        .photo-slot.drag-active { background-color: #e3f2fd; border-color: var(--ws-cyan); transform: scale(1.02); }
+        .photo-slot input { display: none; }
+        .photo-slot img { width: 100%; height: 100%; object-fit: contain; display: none; pointer-events: none; }
+        .photo-slot.has-image .placeholder { display: none; }
+        .photo-slot.has-image img { display: block; }
+        .photo-slot:focus { outline: 2px solid var(--ws-cyan); border-color: transparent; }
+
+        /* Checkbox */
+        .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-top: 5px; background: #fff; padding: 8px; border: 1px solid #ddd; }
+        .checkbox-item { display: flex; align-items: center; gap: 6px; font-size: 0.85em; }
+
+        /* PDF Oculto */
+        #print-area { position: absolute; top: 0; left: -9999px; width: 800px; background: white; padding: 20px; z-index: 9999; }
+        .pdf-page { width: 800px; min-height: 1120px; background: white; padding: 20px; margin-bottom: 20px; box-sizing: border-box; position: relative; page-break-after: always; }
+        .header-bar { background-color: var(--ws-blue); color: white; font-weight: bold; padding: 0 15px; border: 1px solid #000; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0; height: 50px; }
+        .header-title { text-align: center; font-size: 18px; flex-grow: 1; text-transform: uppercase; margin-right: 50px; }
+        .ws-logo-container { display: flex; align-items: center; background: white; padding: 3px 8px; border-radius: 4px; height: 25px; }
+        .ws-icon { font-family: "Arial Black", "Arial", sans-serif; font-weight: 900; font-size: 24px; line-height: 1; letter-spacing: -2px; margin-right: 6px; }
+        .ws-text { font-family: "Times New Roman", serif; color: var(--ws-blue); font-weight: bold; font-size: 14px; line-height: 1; white-space: nowrap; }
+
+        /* Tabelas PDF */
+        .master-table { width: 100%; border-collapse: collapse; border: 2px solid #000; margin-bottom: 5px; table-layout: fixed; font-family: 'Arial', sans-serif; }
+        .master-table td { border: 1px solid #000; vertical-align: top; padding: 0; }
+        .col-right { width: 50%; vertical-align: top; padding: 0; border-left: 2px solid #000; height: 100%; }
+        .team-table { width: 100%; border-collapse: collapse; height: 100%; display: table; }
+        .row-auxiliares { height: 100%; }
+        .cell-auxiliares { vertical-align: top !important; height: 100%; }
+        .inner-data-table { width: 100%; border-collapse: collapse; }
+        .inner-data-table td { border-bottom: 1px solid #000; padding: 0 5px; font-size: 10px; height: 20px; vertical-align: middle; }
+        .inner-data-table tr:last-child td { border-bottom: 1px solid #000; }
+        .label-cell { font-weight: bold; background-color: #fff; width: 130px; text-align: center; border-right: 1px solid #000; padding: 0; vertical-align: middle;}
+        .value-cell { text-align: center; font-weight: bold; font-size: 10px; }
+        .obs-cell-left { height: 45px; font-size: 11px; vertical-align: top; padding: 6px; text-align: left; border-top: none; }
+        .right-header { text-align: center; font-weight: bold; padding: 5px; border-bottom: 1px solid #000; font-size: 11px; background-color: #fff; height: 22px; box-sizing: border-box;}
+        .avaria-list { list-style: none; padding: 0; margin: 0; font-size: 10px; width: 100%; }
+        .avaria-list li { padding: 0 10px; border-bottom: 1px solid #000; height: 20px; display: flex; align-items: center; }
+        .team-table td { border-bottom: 1px solid #000; border-right: 1px solid #000; font-size: 10px; text-align: center; vertical-align: middle; padding: 2px; }
+        .team-table tr:last-child td { border-bottom: none; }
+        .team-table td:last-child { border-right: none; }
+        .team-header-cell { background-color: #f0f0f0; font-weight: bold; height: 20px; border-bottom: 2px solid #000 !important; }
+        .team-sub-header { background-color: #e0e0e0; font-weight: bold; height: 18px; }
+        .checkbox-pdf { font-family: 'Courier New', monospace; font-weight: bold; font-size: 12px; }
+        .section-separator { background-color: var(--ws-blue); color: white; text-align: center; font-weight: bold; padding: 4px; border: 1px solid #000; margin-top: 4px; font-size: 12px; }
+        .photo-grid-table { width: 100%; border-collapse: collapse; margin-top: 0; table-layout: fixed; }
+        .photo-grid-table td { border: 1px solid #000; padding: 5px; text-align: center; height: 260px; vertical-align: middle; width: 50%; }
+        .photo-grid-table img { max-width: 100%; max-height: 250px; object-fit: contain; display: block; margin: 0 auto; }
+        .signatures-box { margin-top: 30px; display: flex; justify-content: space-around; text-align: center; font-size: 10px; }
+        .sig-line { border-top: 1px solid #000; width: 180px; padding-top: 3px; }
+
+        /* --- ESTILOS DO MODAL DE EDIÇÃO --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; display: none; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 900px; height: 90%; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .editor-canvas-container { flex: 1; overflow: auto; border: 1px solid #ccc; margin: 15px 0; background: #f0f0f0; position: relative; display: flex; justify-content: center; align-items: center; }
+        .editor-toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .tool-btn { padding: 8px 12px; border: 1px solid #ccc; background: #f8f9fa; cursor: pointer; border-radius: 4px; font-size: 13px; display: flex; align-items: center; gap: 5px; }
+        .tool-btn:hover { background: #e2e6ea; }
+        .tool-btn.active { background: var(--ws-cyan); color: white; border-color: var(--ws-cyan); }
+        .color-picker { display: flex; align-items: center; gap: 5px; margin-left: 10px; }
+        .color-option { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+        .color-option.selected { border-color: #333; transform: scale(1.2); }
+        .edit-icon-btn { position: absolute; top: 5px; right: 5px; z-index: 10; background: rgba(255, 255, 255, 0.9); border: 1px solid #ccc; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px; display: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .edit-icon-btn:hover { background: white; color: var(--ws-cyan); }
+        .photo-slot.has-image .edit-icon-btn { display: block; }
+        /* Botão de Lixeira na Grade */
+        .delete-icon-btn {
+            position: absolute;
+            top: 5px;
+            left: 5px; /* Fica no canto esquerdo */
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #dc3545; /* Borda vermelha */
+            border-radius: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 14px;
+            display: none; /* Escondido por padrão */
+            color: #dc3545;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+        .delete-icon-btn:hover {
+            background: #dc3545;
+            color: white;
+        }
+        /* Mostra o botão quando tem imagem */
+        .photo-slot.has-image .delete-icon-btn {
+            display: block;
+        }
+    </style>
+ <head>
+<body>
+
+
+
+<div class="container">
+
+    <div class="morpheus-header" style="position: relative;">
+        <img src="https://abolbrasil.org.br/wordpress/wp-content/uploads/2022/02/wilson-sons-tem-novo-ceo.png" alt="Wilson Sons Logo" class="morpheus-logo">
+        <h1>Gerador de Relatório Operacional - ARMAZÉM</h1>
+
+        <button onclick="location.reload()" style="
+            position: absolute; 
+            right: 10px; 
+            top: 80%; 
+            transform: translateY(-50%);
+            background:var(--ws-cyan);
+            border: 1px solid white; 
+            color: white; 
+            padding: 8px 15px; 
+            font-size: 10px; 
+            cursor: pointer; 
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        " onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
+            🏠 Início
+        </button>
+    </div>
+
+
+
+    <div class="content-body">
+
+        <div class="selection-panel">
+            <label style="margin-bottom: 10px; display:block; text-align:center; font-size:16px; color:var(--ws-blue);">
+                Selecione o Relatório Desejado.
+            </label>
+
+            <input type="hidden" id="categoria">
+
+            <div class="category-group">
+                <div class="cat-btn" onclick="selectCategory('termo', this)">
+                    <span class="cat-btn-icon">📋</span>
+                    <strong>Termo de Falta/Avaria</strong>
+                </div>
+                <div class="cat-btn" onclick="selectCategory('bagagem', this)">
+                    <span class="cat-btn-icon">🧳</span>
+                    <strong>Relatório de Bagagem</strong>
+                </div>
+            </div>
+
+            <div id="row-tipo-especifico" class="row" style="display:none; animation: fadeIn 0.5s;">
+                <div class="col">
+                    <label>Selecione o Tipo Específico:</label>
+                    <select id="tipo_especifico" onchange="initializeForm()" style="padding: 12px; font-size: 15px; border: 2px solid var(--ws-cyan);">
+                        <option value="">Aguardando seleção...</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <style>@keyframes fadeIn { from {opacity:0; transform:translateY(-10px);} to {opacity:1; transform:translateY(0);} }</style>
+   
+
+        <div id="mainForm" style="display:none;">
+
+            <div id="reports-container"></div>
+
+   
+
+            <div id="cascade-actions" class="cascade-actions">
+
+                <p><strong>Adicionar sequência:</strong></p>
+
+                <button type="button" class="btn-cascade" onclick="addSection('avaria')">➕ Adicionar Avaria</button>
+
+                <button type="button" class="btn-cascade" onclick="addSection('ovacao')">➕ Adicionar Ovação</button>
+
+            </div>
+
+   
+
+            <div class="btn-group">
+
+                <button type="button" class="btn-clear" onclick="location.reload()">Limpar Tudo</button>
+
+                <button type="button" class="btn-generate" id="btn-download" onclick="generateAllPDFs()">⬇️ Baixar PDF Completo</button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<div id="imageEditorModal" class="modal-overlay">
+
+    <div class="modal-content">
+
+        <h3 style="margin-top:0; color:var(--ws-blue);">Editar Imagem</h3>
+
+       
+
+        <div class="editor-toolbar">
+
+            <button class="tool-btn" onclick="setTool('pen')" id="btn-pen">✏️ Caneta</button>
+
+            <button class="tool-btn" onclick="setTool('ellipse')" id="btn-ellipse">⭕ Elipse</button>
+
+            <button class="tool-btn" onclick="toggleCrop()" id="btn-crop">✂️ Cortar (Arraste)</button>
+
+            <button class="tool-btn" onclick="undoLast()">↩️ Desfazer</button>
+
+            <button class="tool-btn" onclick="clearCanvas()">🗑️ Limpar</button>
+
+           
+
+            <div class="color-picker">
+
+                <span style="font-size:12px; font-weight:bold;">Cor:</span>
+
+                <div class="color-option" style="background: red;" onclick="setColor('red')" id="color-red"></div>
+
+                <div class="color-option" style="background: blue;" onclick="setColor('blue')" id="color-blue"></div>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="editor-canvas-container">
+
+            <canvas id="editorCanvas"></canvas>
+
+        </div>
+
+
+
+        <div style="text-align: right; margin-top: 10px;">
+
+            <button onclick="closeEditor()" style="background: #6c757d; color: white; margin-right: 10px; padding: 8px 15px;">Cancelar</button>
+
+            <button onclick="saveImage()" style="background: var(--ws-blue); color: white; padding: 8px 15px;">Salvar Edição</button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<template id="tpl-bagagem">
+    <div class="report-section" data-type="bagagem">
+        <button type="button" class="section-close-btn" onclick="removeSection(this)">🗑️ Remover Seção</button>
+        <h3 class="section-title">RELATÓRIO DE BAGAGEM</h3>
+        
+        <div class="row">
+            <div class="col"><label>Cliente:</label><input type="text" class="inp-cliente"></div>
+            <div class="col"><label>Data do Serviço:</label><input type="text" class="inp-data" placeholder="dd/mm/aaaa" maxlength="10"></div>
+        </div>
+        <div class="row">
+            <div class="col"><label>Container:</label><input type="text" class="inp-container" placeholder="AAAA1234567" maxlength="11"></div>
+            <div class="col"><label>BL:</label><input type="text" class="inp-bl"></div>
+        </div>
+        <div class="row">
+            <div class="col"><label class="lbl-lacre">Lacre:</label><input type="text" class="inp-lacre"></div>
+            <div class="col col-cpf"><label>CPF:</label><input type="text" class="inp-cpf" placeholder="000.000.000-00" maxlength="14"></div>
+        </div>
+        <div class="row">
+            <div class="col"><label>Houve Avaria?</label><select class="inp-avaria"><option value="Não">Não</option><option value="Sim">Sim</option></select></div>
+            <div class="col"><label>Acompanhamento?</label><select class="inp-acomp"><option value="Não">Não</option><option value="Sim">Sim</option></select></div>
+        </div>
+        <h4>Equipe Operacional</h4>
+        <div class="row">
+            <div class="col"><label>Conferente: <button type="button" class="btn-mini-add" onclick="addStaff(this)">+Add</button></label><div class="container-staff"></div></div>
+            <div class="col"><label>Op. Empilhadeira: <button type="button" class="btn-mini-add" onclick="addStaff(this)">+Add</button></label><div class="container-staff"></div></div>
+            <div class="col"><label>Auxiliares: <button type="button" class="btn-mini-add" onclick="addStaff(this)">+Add</button></label><div class="container-staff"></div></div>
+        </div>
+        <div class="row"><div class="col"><label>Observação:</label><textarea class="inp-obs" rows="2"></textarea></div></div>
+        <input type="hidden" class="inp-mercadoria" value="BAGAGEM">
+        <h4>Fotos (Clique ou Arraste)</h4>
+        <div class="photo-grid"></div>
+        <button type="button" class="btn-add" onclick="addPhotoSlot(this)">➕ Mais Fotos</button>
+        <input type="hidden" class="inp-subtype">
+    </div>
+</template>
+
+
+
+<template id="tpl-termo">
+    <div class="report-section" data-type="termo">
+        <button type="button" class="section-close-btn" onclick="removeSection(this)">🗑️ Remover Seção</button>
+        <h3 class="section-title">TERMO DE AVARIA</h3>
+        <div class="row">
+            <div class="col"><label>Cliente:</label><input type="text" class="inp-cliente"></div>
+            <div class="col"><label>Data do Serviço:</label><input type="text" class="inp-data" placeholder="dd/mm/aaaa" maxlength="10"></div>
+        </div>
+        <div class="row">
+            <div class="col"><label>Container:</label><input type="text" class="inp-container" placeholder="AAAA1234567" maxlength="11"></div>
+            <div class="col"><label>BL:</label><input type="text" class="inp-bl"></div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <label>Serviço:</label>
+                <select class="inp-servico">
+                    <option value="DESOVA TOTAL">DESOVA TOTAL</option>
+                    <option value="DESOVA CONSOLIDADO">DESOVA CONSOLIDADO</option>
+                    <option value="CROSSDOCKING">CROSSDOCKING</option>
+                    <option value="DESOVA PARA RFB">DESOVA PARA RFB</option>
+                    <option value="TRANSFERÊNCIA DE CONTAINER">TRANSFERÊNCIA DE CONTAINER</option>
+                    <option value="VISTORIA MAPA">VISTORIA MAPA</option>
+                    <option value="CARREGAMENTO">CARREGAMENTO</option>
+                </select>
+            </div>
+            <div class="col"><label>Qtd Avarias:</label><input type="text" class="inp-qtd"></div>
+        </div>
+        <label>Tipo de Avaria:</label>
+        <div class="checkbox-grid">
+            <div class="checkbox-item"><input type="checkbox" value="CAIXA RASGADA"> Caixa Rasgada</div>
+            <div class="checkbox-item"><input type="checkbox" value="CAIXA MOLHADA"> Caixa Molhada</div>
+            <div class="checkbox-item"><input type="checkbox" value="CAIXA AMASSADA"> Caixa Amassada</div>
+            <div class="checkbox-item"><input type="checkbox" value="PALLET QUEBRADO"> Pallet Quebrado</div>
+            <div class="checkbox-item"><input type="checkbox" value="EMBALAGEM RASGADA"> Embalagem Rasgada</div>
+            <div class="checkbox-item"><input type="checkbox" value="CAIXA QUEBRADA"> Caixa Quebrada</div>
+            <div class="checkbox-item"><input type="checkbox" value="PEÇA AVARIADA"> Peça Avariada</div>
+            <div class="checkbox-item"><input type="checkbox" value="BAG RASGADA"> Bag Rasgada</div>
+            <div class="checkbox-item"><input type="checkbox" value="FARDO RASGADO"> Fardo Rasgado</div>
+            <div class="checkbox-item"><input type="checkbox" value="CONTAINER AVARIADO"> Container Avariado</div>
+            <div class="checkbox-item"><input type="checkbox" value="CONTAINER COM FURO"> Container com Furo</div>
+            <div class="checkbox-item" style="grid-column: span 2;">
+                <input type="checkbox" value="OUTRO" onchange="toggleOtherAvaria(this)"> 
+                Outro: <input type="text" class="inp-other-avaria" disabled style="width: 150px; padding: 2px; margin-left: 5px;" placeholder="Descreva...">
+            </div>
+        </div>
+        <div class="row"><div class="col"><label>Observação:</label><textarea class="inp-obs" rows="2"></textarea></div></div>
+        <h4>Fotos (Clique ou Arraste)</h4>
+        <div class="photo-grid"></div>
+        <button type="button" class="btn-add" onclick="addPhotoSlot(this)">➕ Mais Fotos</button>
+    </div>
+</template>
+
+
+<<div id="errorModal" class="error-modal">
+    <div class="error-modal-content">
+        <div class="error-modal-header">
+            <div class="error-icon-box">⚠️</div>
+            <h3 class="error-title">Atenção Necessária</h3>
+        </div>
+        <div class="error-modal-body">
+            <p class="error-intro">Não foi possível gerar o relatório. Por favor, verifique os seguintes itens obrigatórios:</p>
+            <ul id="errorList" class="error-list">
+                </ul>
+        </div>
+        <div class="error-modal-footer">
+            <button class="btn-close-error" onclick="closeErrorModal()">Entendi, vou corrigir</button>
+        </div>
+    </div>
+</div>
+<div id="errorModal" class="error-modal">
+    <div class="error-modal-content">
+        <div class="error-modal-header">
+            <div class="error-icon-box">!</div>
+            <h3 class="error-title">Campos Pendentes</h3>
+        </div>
+        <div class="error-modal-body">
+            <p style="margin-top:0; color:#666;">Para gerar o relatório, por favor preencha os itens obrigatórios abaixo:</p>
+            <ul id="errorList" class="error-list">
+                </ul>
+        </div>
+        <div class="error-modal-footer">
+            <button class="btn-close-error" onclick="closeErrorModal()">Entendi, vou corrigir</button>
+        </div>
+    </div>
+</div>
+
+<div id="print-area"></div>
+
+
+
+<script>
+    
+
+   const opcoes = {
+        "termo": [ { val: "avaria_origem", text: "Avaria de Origem" }, { val: "avaria_interna", text: "Avaria Interna" } ],
+        "bagagem": [ { val: "bagagem_desova", text: "Desova" }, { val: "bagagem_ovacao", text: "Ovação" }, { val: "bagagem_avaria", text: "Avaria de Bagagem" } ]
+    };
+
+    // --- VARIÁVEIS DO EDITOR ---
+    let currentEditorSlot = null;
+    let canvas, ctx;
+    let isDrawing = false;
+    let currentTool = 'pen'; 
+    let currentColor = 'red';
+    let startX, startY;
+    let canvasHistory = []; 
+    let imgObj = new Image(); 
+    let isCropping = false; 
+
+   // --- VARIÁVEIS DO EDITOR ---
+    // (Mantenha suas variáveis globais aqui...)
+    
+    // --- NOVA LÓGICA DE SELEÇÃO POR BOTÕES ---
+    function selectCategory(valor, elementoBtn) {
+        // 1. Atualiza o valor no input oculto
+        document.getElementById("categoria").value = valor;
+
+        // 2. Visual: Remove a classe 'active' de todos e adiciona no clicado
+        document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+        elementoBtn.classList.add('active');
+
+        // 3. Mostra a lista de tipos específicos
+        const rowTipo = document.getElementById("row-tipo-especifico");
+        rowTipo.style.display = "flex";
+
+        // 4. Popula o select (lógica da antiga updateForm)
+        updateSubTypes(valor);
+    }
+
+    function updateSubTypes(cat) {
+        const subSelect = document.getElementById("tipo_especifico");
+        subSelect.innerHTML = '<option value="">Selecione uma opção...</option>';
+        
+        if (cat && opcoes[cat]) {
+            opcoes[cat].forEach(opt => {
+                const option = document.createElement("option");
+                option.value = opt.val;
+                option.text = opt.text;
+                subSelect.appendChild(option);
+            });
+        }
+        // Esconde o formulário principal ao trocar de categoria para evitar conflito
+        document.getElementById("mainForm").style.display = "none";
+    }
+
+    function initializeForm() {
+        const tipo = document.getElementById("tipo_especifico").value;
+        if (!tipo) return;
+
+        const container = document.getElementById("reports-container");
+        container.innerHTML = ""; 
+        document.getElementById("mainForm").style.display = "block";
+        document.getElementById("cascade-actions").style.display = "none";
+
+        if (tipo === "bagagem_desova") {
+            addSection("desova", true);
+            document.getElementById("cascade-actions").style.display = "block";
+        } else if (tipo === "bagagem_ovacao") {
+            addSection("ovacao", true);
+        } else if (tipo === "bagagem_avaria") {
+            addSection("bagagem_avaria", true);
+        } else if (tipo.includes("avaria")) {
+            addSection("termo", true, tipo);
+        }
+    }
+
+// Função auxiliar para verificar se já existe uma seção de DESOVA
+    function hasDesovaSection() {
+        const sections = document.querySelectorAll('.report-section');
+        for (let section of sections) {
+            // Verifica o input hidden que guarda o subtipo
+            const subtypeInput = section.querySelector('.inp-subtype');
+            if (subtypeInput && subtypeInput.value === 'desova') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+   // Função auxiliar para verificar se já existe uma seção de um determinado subtipo
+    function hasSectionByType(targetSubtype) {
+        const sections = document.querySelectorAll('.report-section');
+        for (let section of sections) {
+            // Verifica o input hidden que guarda o subtipo
+            const subtypeInput = section.querySelector('.inp-subtype');
+            if (subtypeInput && subtypeInput.value === targetSubtype) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function addSection(type, isFirst = false, termoSubtype = "") {
+        const container = document.getElementById("reports-container");
+        let templateId = "";
+        let subtype = "";
+        
+        // Define qual template usar e qual o subtipo
+        if (type === "desova" || type === "ovacao" || type === "bagagem_avaria") {
+            templateId = "tpl-bagagem";
+            subtype = type;
+        } else if (type === "avaria" || type === "termo") {
+            templateId = "tpl-termo";
+            subtype = termoSubtype || type; 
+        }
+
+        // --- NOVA LÓGICA DE BLOQUEIO (Desova E Ovação) ---
+        // Se estiver tentando adicionar 'desova' ou 'ovacao' e não for a primeira vez (inicialização)
+        if (!isFirst) {
+            if (subtype === 'desova' && hasSectionByType('desova')) {
+                alert("Atenção: Já existe um formulário de DESOVA. Não é permitido adicionar outro.");
+                return; 
+            }
+            if (subtype === 'ovacao' && hasSectionByType('ovacao')) {
+                alert("Atenção: Já existe um formulário de OVAÇÃO. Não é permitido adicionar outro.");
+                return; 
+            }
+        }
+        // -------------------------------
+
+        const clone = document.getElementById(templateId).content.cloneNode(true);
+        const section = clone.querySelector('.report-section');
+
+        // --- APLICAR MÁSCARAS E REGRAS ---
+        if (typeof setupInputMasks === "function") {
+            setupInputMasks(section);
+        }
+
+        if (!isFirst) {
+            const previousSection = container.querySelector('.report-section:last-child');
+            if (previousSection) {
+                // Copia campos padrão
+                const campos = ['cliente', 'container', 'bl', 'data'];
+                campos.forEach(campo => {
+                    const prevInput = previousSection.querySelector(`.inp-${campo}`);
+                    const currentInput = section.querySelector(`.inp-${campo}`);
+                    if (prevInput && currentInput) {
+                        currentInput.value = prevInput.value;
+                    }
+                });
+                
+                // Lógica Específica de Cópia
+                if (subtype === "bagagem_avaria") {
+                    const dataInput = section.querySelector('.inp-data');
+                    if (dataInput) dataInput.readOnly = true;
+                }
+
+                // Cópia do CPF para Ovação
+                if (subtype === "ovacao") {
+                    const dataInput = section.querySelector('.inp-data');
+                    if (dataInput) dataInput.value = ""; 
+                    
+                    const prevCpf = previousSection.querySelector('.inp-cpf');
+                    const currentCpf = section.querySelector('.inp-cpf');
+                    
+                    if (prevCpf && currentCpf) {
+                        currentCpf.value = prevCpf.value;
+                    }
+                }
+            }
+        } else {
+            const closeBtn = section.querySelector('.section-close-btn');
+            if(closeBtn) closeBtn.style.display = "none";
+        }
+
+        // Configuração dos textos baseados no subtipo
+        if (subtype === "desova") {
+            section.querySelector('.section-title').innerText = "1. RELATÓRIO DE DESOVA";
+            section.querySelector('.lbl-lacre').innerText = "Lacre de Origem:";
+            section.querySelector('.inp-obs').value = "Realizada a desova da bagagem para conferência física com a Receita Federal do Brasil.";
+            section.querySelector('.inp-subtype').value = "desova";
+
+        } else if (subtype === "ovacao") {
+            section.querySelector('.section-title').innerText = "RELATÓRIO DE OVAÇÃO";
+            section.querySelector('.lbl-lacre').innerText = "Lacre do Terminal:";
+            section.querySelector('.inp-obs').value = "Após conferência física, a carga foi guardada no contêiner.";
+            section.querySelector('.inp-subtype').value = "ovacao";
+
+        } else if (subtype === "bagagem_avaria") {
+            section.querySelector('.section-title').innerText = "RELATÓRIO DE AVARIA (BAGAGEM)";
+            section.querySelector('.lbl-lacre').innerText = "Lacre:";
+            
+            // Frase ajustada
+            section.querySelector('.inp-obs').value = "Informamos que, durante a desova do container em questão, foi identificada avaria de origem.";
+            
+            const colCpf = section.querySelector('.col-cpf');
+            if(colCpf) colCpf.style.display = "none"; 
+            section.querySelector('.inp-subtype').value = "bagagem_avaria";
+
+        } else {
+            // Lógica para Termo de Avaria
+            section.querySelector('.section-title').innerText = "TERMO DE AVARIA E/OU FALTA";
+            
+            if (subtype === "avaria_interna") {
+                section.querySelector('.inp-obs').value = "Informamos que, durante o processo do referido serviço foi ocasionada avaria interna conforme registros fotográficos.";
+            } else {
+                section.querySelector('.inp-obs').value = "Informamos que, durante a desova do container em questão, foi identificada avaria de origem.";
+            }
+        }
+
+        const photoGrid = section.querySelector('.photo-grid');
+        if(photoGrid) {
+            for(let i=0; i<4; i++) addPhotoSlotToGrid(photoGrid);
+        }
+
+        if (templateId === "tpl-bagagem") {
+            section.querySelectorAll('.container-staff').forEach(div => {
+                const input = document.createElement("input");
+                input.type = "text"; input.className = "staff-input dynamic-input"; input.placeholder = "Nome";
+                div.appendChild(input);
+            });
+        }
+
+        container.appendChild(section);
+        if (!isFirst) section.scrollIntoView({behavior: 'smooth'});
+    }
+
+    // --- FUNÇÕES DE MÁSCARA E VALIDAÇÃO ---
+    function setupInputMasks(section) {
+        // Máscara de Data (xx/xx/xxxx)
+        const dateInput = section.querySelector('.inp-data');
+        if (dateInput) {
+            // Remove o type="date" nativo para usar texto com máscara se preferir, ou força formato visual
+            // Aqui assumimos input type="text" no HTML para controle total da máscara
+            dateInput.addEventListener('input', function(e) {
+                let v = e.target.value.replace(/\D/g, '');
+                if (v.length > 2) v = v.replace(/^(\d{2})(\d)/, '$1/$2');
+                if (v.length > 5) v = v.replace(/^(\d{2})\/(\d{2})(\d)/, '$1/$2/$3');
+                e.target.value = v.slice(0, 10);
+            });
+        }
+
+        // Máscara de CPF (XXX.XXX.XXX-XX)
+        const cpfInput = section.querySelector('.inp-cpf');
+        if (cpfInput) {
+            cpfInput.addEventListener('input', function(e) {
+                let v = e.target.value.replace(/\D/g, '');
+                if (v.length > 3) v = v.replace(/^(\d{3})(\d)/, '$1.$2');
+                if (v.length > 6) v = v.replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3');
+                if (v.length > 9) v = v.replace(/^(\d{3})\.(\d{3})\.(\d{3})(\d)/, '$1.$2.$3-$4');
+                e.target.value = v.slice(0, 14);
+            });
+        }
+
+        // Validação de Container (4 Letras + 7 Números)
+        const containerInput = section.querySelector('.inp-container');
+        if (containerInput) {
+            containerInput.addEventListener('input', function(e) {
+                let v = e.target.value.toUpperCase();
+                // Permite digitar, mas valida no final ou restringe caracteres
+                // Regex simples: Primeiros 4 devem ser letras, restos números
+                if (v.length <= 4) {
+                    e.target.value = v.replace(/[^A-Z]/g, '');
+                } else {
+                    let prefix = v.slice(0, 4);
+                    let suffix = v.slice(4).replace(/\D/g, '');
+                    e.target.value = (prefix + suffix).slice(0, 11);
+                }
+            });
+        }
+    }
+    // --- FUNÇÃO AUXILIAR DE VALIDAÇÃO DE DATA ---
+    function isValidDate(dateString) {
+        if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) return false;
+        
+        const [day, month, year] = dateString.split('/').map(Number);
+        const date = new Date(year, month - 1, day);
+        
+        // Verifica se a data é real (ex: 30/02)
+        if (date.getFullYear() !== year || date.getMonth() + 1 !== month || date.getDate() !== day) return false;
+        
+        const now = new Date();
+        now.setHours(0,0,0,0);
+        
+        // Regra: Não permitir futuro
+        if (date > now) return false;
+        
+        // Regra: Não permitir mais que 4 anos atrás
+        const minDate = new Date();
+        minDate.setFullYear(now.getFullYear() - 4);
+        if (date < minDate) return false;
+        
+        return true;
+    }
+    // --- FUNÇÃO DE VALIDAÇÃO GERAL COM SINALIZAÇÃO VISUAL ---
+    function validateForms() {
+        const sections = document.querySelectorAll('.report-section');
+        let errors = [];
+
+        // Limpa erros visuais anteriores
+        document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
+
+        sections.forEach((section, index) => {
+            const type = section.dataset.type;
+            const subtype = section.querySelector('.inp-subtype') ? section.querySelector('.inp-subtype').value : type;
+            const formName = `📝 Formulário ${index + 1} (${subtype.toUpperCase().replace('_', ' ')})`;
+            let formErrors = [];
+
+            // Helper para marcar erro
+            const markError = (input, msg) => {
+                if(input) input.classList.add('input-error');
+                formErrors.push(`   • ${msg}`);
+            };
+
+            // --- Validação Campos Comuns ---
+            const clienteInp = section.querySelector('.inp-cliente');
+            const dataInp = section.querySelector('.inp-data');
+            const containerInp = section.querySelector('.inp-container');
+            const blInp = section.querySelector('.inp-bl');
+
+            if (!clienteInp.value.trim()) markError(clienteInp, "Cliente é obrigatório");
+            if (!blInp.value.trim()) markError(blInp, "BL é obrigatório");
+            
+            // Validação Container
+            if (!containerInp.value.trim()) {
+                markError(containerInp, "Container é obrigatório");
+            } else if (!/^[A-Z]{4}\d{7}$/.test(containerInp.value.trim())) {
+                markError(containerInp, "Container inválido (4 letras + 7 números)");
+            }
+
+            // Validação Data
+            if (!dataInp.value.trim()) {
+                markError(dataInp, "Data do Serviço é obrigatória");
+            } else {
+                const dateMsg = checkDate(dataInp.value.trim());
+                if (dateMsg !== true) markError(dataInp, dateMsg);
+            }
+
+            // --- Validação Específica ---
+            if (type === 'termo') {
+                const qtdInp = section.querySelector('.inp-qtd');
+                if (!qtdInp.value.trim()) markError(qtdInp, "Qtd Avarias é obrigatória");
+                
+                const checkboxes = section.querySelectorAll('.checkbox-grid input[type="checkbox"]:checked');
+                if (checkboxes.length === 0) {
+                    // Marca a grid inteira como erro visualmente
+                    section.querySelector('.checkbox-grid').classList.add('input-error');
+                    formErrors.push("   • Selecione pelo menos um Tipo de Avaria");
+                }
+            } 
+            else if (type === 'bagagem') {
+                const lacreInp = section.querySelector('.inp-lacre');
+                if (!lacreInp.value.trim()) markError(lacreInp, "Lacre é obrigatório");
+                
+                const cpfInp = section.querySelector('.inp-cpf');
+                const isCpfVisible = cpfInp && cpfInp.closest('.col').style.display !== 'none';
+                
+                if (isCpfVisible && !cpfInp.value.trim()) {
+                    markError(cpfInp, "CPF é obrigatório");
+                }
+            }
+
+            if (formErrors.length > 0) {
+                errors.push(`${formName}:\n${formErrors.join("\n")}`);
+            }
+        });
+
+        return errors;
+    }
+
+    // Função para habilitar campo "Outro" nas avarias
+    function toggleOtherAvaria(checkbox) {
+        const input = checkbox.parentElement.querySelector('.inp-other-avaria');
+        if (input) {
+            input.disabled = !checkbox.checked;
+            if (checkbox.checked) input.focus();
+            else input.value = '';
+        }
+    }
+
+    function removeSection(btn) {
+        btn.closest('.report-section').remove();
+    }
+
+    function addStaff(btn) {
+        const container = btn.closest('.col').querySelector('.container-staff');
+        const input = document.createElement("input");
+        input.type = "text"; input.className = "staff-input dynamic-input"; input.placeholder = "Nome";
+        container.appendChild(input);
+    }
+
+    function addPhotoSlot(btn) {
+        const grid = btn.previousElementSibling;
+        addPhotoSlotToGrid(grid);
+        addPhotoSlotToGrid(grid);
+    }
+
+    function addPhotoSlotToGrid(grid) {
+        const count = grid.children.length + 1;
+        const slot = document.createElement('div');
+        slot.className = 'photo-slot';
+        slot.setAttribute('tabindex', '0');
+
+        
+        slot.innerHTML = `
+            <div class="placeholder"><span>📷</span><br>Foto ${count}<br><small>2x Clique: Arquivo<br>Ctrl+V: Colar</small></div>
+            <input type="file" accept="image/*" style="display:none;" onchange="handleFileSelect(this)">
+            <img src="">
+            <button type="button" class="edit-icon-btn" onclick="editImageFromSlot(this, event)">✏️ Editar</button>
+            <button type="button" class="delete-icon-btn" onclick="deleteImageFromSlot(this, event)">🗑️</button>
+        `;
+        
+        const fileInput = slot.querySelector('input[type="file"]');
+
+        slot.addEventListener('click', function(e) { this.focus(); });
+        slot.addEventListener('dblclick', function(e) { fileInput.click(); });
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            slot.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false);
+        });
+
+        slot.addEventListener('drop', function(e) {
+            const files = e.dataTransfer.files;
+            if (files.length > 0) processFile(files[0], slot);
+        }, false);
+
+        slot.addEventListener('paste', function(e) {
+            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+            for (let index in items) {
+                const item = items[index];
+                if (item.kind === 'file' && item.type.includes('image/')) {
+                    const blob = item.getAsFile();
+                    processFile(blob, slot);
+                    e.preventDefault();
+                    break;
+                }
+            }
+        });
+
+        grid.appendChild(slot);
+    }
+    // --- NOVA FUNÇÃO PARA DELETAR IMAGEM DA GRADE ---
+    function deleteImageFromSlot(btn, e) {
+        e.stopPropagation(); // Impede o clique de propagar para o slot
+        const slot = btn.parentElement;
+        
+        // Limpa a imagem
+        const img = slot.querySelector('img');
+        img.src = "";
+        
+        // Limpa o input file
+        const fileInput = slot.querySelector('input[type="file"]');
+        fileInput.value = "";
+        
+        // Remove a classe que esconde o placeholder
+        slot.classList.remove('has-image');
+    }
+
+    function handleFileSelect(input) {
+        if (input.files && input.files[0]) {
+            processFile(input.files[0], input.parentElement);
+            input.value = ''; 
+        }
+    }
+
+    function processFile(blob, slot) {
+        const img = slot.querySelector('img');
+        const fileInput = slot.querySelector('input[type="file"]');
+        img.src = URL.createObjectURL(blob);
+        slot.classList.add('has-image');
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(new File([blob], "image.png", { type: "image/png" }));
+        fileInput.files = dataTransfer.files;
+    }
+
+    // --- FUNÇÕES DO EDITOR ---
+
+    function editImageFromSlot(btn, e) {
+        e.stopPropagation();
+        const slot = btn.parentElement;
+        const img = slot.querySelector('img');
+        if (img.src) {
+            fetch(img.src).then(res => res.blob()).then(blob => openEditor(blob, slot));
+        }
+    }
+
+    function openEditor(fileBlob, slotElement) {
+        currentEditorSlot = slotElement;
+        const modal = document.getElementById('imageEditorModal');
+        const container = modal.querySelector('.editor-canvas-container');
+        
+        canvas = document.getElementById('editorCanvas');
+        ctx = canvas.getContext('2d');
+        
+        canvasHistory = [];
+        setColor('red');
+        setTool('pen');
+        
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            imgObj = new Image(); 
+            imgObj.onload = function() {
+                canvas.width = imgObj.width;
+                canvas.height = imgObj.height;
+                ctx.drawImage(imgObj, 0, 0);
+                saveState(); 
+                modal.style.display = 'flex'; 
+                initCanvasEvents(); 
+            }
+            imgObj.src = event.target.result;
+        }
+        reader.readAsDataURL(fileBlob);
+    }
+
+    function closeEditor() {
+        document.getElementById('imageEditorModal').style.display = 'none';
+        isCropping = false;
+    }
+
+    function saveImage() {
+        canvas.toBlob(function(blob) {
+            processFile(blob, currentEditorSlot);
+            closeEditor();
+        }, 'image/png');
+    }
+
+    // --- LÓGICA DO CANVAS ---
+    function initCanvasEvents() {
+        const newCanvas = canvas.cloneNode(true);
+        canvas.parentNode.replaceChild(newCanvas, canvas);
+        canvas = newCanvas;
+        ctx = canvas.getContext('2d');
+        
+        const img = new Image();
+        if(canvasHistory.length > 0) {
+             img.src = canvasHistory[canvasHistory.length-1];
+        } else {
+             img.src = imgObj.src;
+        }
+        
+        img.onload = function() { 
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0); 
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+    }
+
+    function getMousePos(evt) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: (evt.clientX - rect.left) * (canvas.width / rect.width),
+            y: (evt.clientY - rect.top) * (canvas.height / rect.height)
+        };
+    }
+
+    function startDrawing(e) {
+        const pos = getMousePos(e);
+        startX = pos.x;
+        startY = pos.y;
+        isDrawing = true;
+
+        if (!isCropping) {
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.strokeStyle = currentColor;
+            ctx.lineWidth = 5; 
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+        }
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        const pos = getMousePos(e);
+
+        if (currentTool === 'pen') {
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        } else if (currentTool === 'ellipse') {
+            restoreState(); 
+            ctx.beginPath();
+            let radiusX = Math.abs(pos.x - startX) / 2;
+            let radiusY = Math.abs(pos.y - startY) / 2;
+            let centerX = Math.min(pos.x, startX) + radiusX;
+            let centerY = Math.min(pos.y, startY) + radiusY;
+            ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
+            ctx.strokeStyle = currentColor;
+            ctx.lineWidth = 5;
+            ctx.stroke();
+        } else if (isCropping) {
+            restoreState();
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const w = pos.x - startX;
+            const h = pos.y - startY;
+            ctx.clearRect(startX, startY, w, h);
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([10, 5]);
+            ctx.strokeRect(startX, startY, w, h);
+            ctx.setLineDash([]);
+        }
+    }
+
+    function stopDrawing(e) {
+        if (!isDrawing) return;
+        isDrawing = false;
+        
+        if (isCropping) {
+            const pos = getMousePos(e);
+            let w = pos.x - startX;
+            let h = pos.y - startY;
+            const finalX = w < 0 ? pos.x : startX;
+            const finalY = h < 0 ? pos.y : startY;
+            const finalW = Math.abs(w);
+            const finalH = Math.abs(h);
+
+            if (finalW > 20 && finalH > 20) {
+                const tempImg = new Image();
+                tempImg.src = canvasHistory[canvasHistory.length - 1] || imgObj.src;
+                tempImg.onload = function() {
+                    canvas.width = finalW;
+                    canvas.height = finalH;
+                    ctx.drawImage(tempImg, finalX, finalY, finalW, finalH, 0, 0, finalW, finalH);
+                    saveState(); 
+                    isCropping = false;
+                    setTool('pen'); 
+                };
+            } else {
+                restoreState(); 
+            }
+        } else {
+            saveState();
+        }
+    }
+
+    function saveState() {
+        if (canvasHistory.length > 10) canvasHistory.shift(); 
+        canvasHistory.push(canvas.toDataURL());
+    }
+
+    function restoreState() {
+        if (canvasHistory.length > 0) {
+            const img = new Image();
+            img.src = canvasHistory[canvasHistory.length - 1];
+            ctx.drawImage(img, 0, 0);
+        }
+    }
+
+    function undoLast() {
+        if (canvasHistory.length > 1) {
+            canvasHistory.pop(); 
+            const prevImgState = canvasHistory[canvasHistory.length - 1];
+            const img = new Image();
+            img.src = prevImgState;
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+            };
+        } else if (canvasHistory.length === 1) {
+            canvasHistory = [];
+            canvas.width = imgObj.width; 
+            canvas.height = imgObj.height;
+            ctx.drawImage(imgObj, 0, 0, imgObj.width, imgObj.height);
+            saveState(); 
+        }
+    }
+
+    // --- FUNÇÃO LIMPAR CANVAS (MODIFICADA) ---
+    function clearCanvas() {
+        // Limpa tudo, deixando transparente/branco
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Opcional: Se quiser preencher com fundo branco ao invés de transparente:
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Salva o estado "vazio" no histórico
+        saveState();
+    }
+
+    function setTool(tool) {
+        currentTool = tool;
+        isCropping = (tool === 'crop');
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+        if(tool === 'pen') document.getElementById('btn-pen').classList.add('active');
+        if(tool === 'ellipse') document.getElementById('btn-ellipse').classList.add('active');
+        if(tool === 'crop') document.getElementById('btn-crop').classList.add('active');
+        canvas.style.cursor = tool === 'crop' ? 'crosshair' : 'default';
+    }
+
+    function toggleCrop() {
+        setTool('crop');
+    }
+
+    function setColor(color) {
+        currentColor = color;
+        document.querySelectorAll('.color-option').forEach(c => c.classList.remove('selected'));
+        document.getElementById('color-' + color).classList.add('selected');
+    }
+
+    // --- GERAÇÃO PDF ---
+    window.jsPDF = window.jspdf.jsPDF;
+// --- FUNÇÃO AUXILIAR: VALIDAÇÃO DE DATA ---
+    // --- FUNÇÃO AUXILIAR DE VALIDAÇÃO DE DATA ---
+  // --- FUNÇÃO AUXILIAR DE VALIDAÇÃO DE DATA ---
+    function checkDate(dateString) {
+        if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) return "Data inválida (use dd/mm/aaaa).";
+
+        const [day, month, year] = dateString.split('/').map(Number);
+        const date = new Date(year, month - 1, day);
+        
+        if (date.getFullYear() !== year || date.getMonth() + 1 !== month || date.getDate() !== day) return "Data inexistente no calendário.";
+        
+        const now = new Date();
+        now.setHours(0,0,0,0);
+        const minDate = new Date(now);
+        minDate.setFullYear(now.getFullYear() - 4); 
+
+        if (date > now) return "Data futura não permitida.";
+        if (date < minDate) return "Data muito antiga (limite de 4 anos).";
+
+        return true;
+    }
+
+    
+
+    // --- CONTROLE DO MODAL ---
+    function showErrors(errors) {
+        const modal = document.getElementById('errorModal');
+        const list = document.getElementById('errorList');
+        list.innerHTML = "";
+        errors.forEach(err => {
+            const li = document.createElement('li');
+            li.innerHTML = err;
+            list.appendChild(li);
+        });
+        modal.style.display = 'flex';
+    }
+
+    function closeErrorModal() {
+        document.getElementById('errorModal').style.display = 'none';
+    }
+    // --- GERAÇÃO FINAL ---
+    async function generateAllPDFs() {
+        // 1. Validação Visual
+        const errors = validateForms();
+        if (errors.length > 0) {
+            showErrors(errors); // Mostra o modal bonito
+            return;
+        }
+
+        const btn = document.getElementById("btn-download");
+        btn.innerText = "⏳ Gerando...";
+        btn.disabled = true;
+        const printArea = document.getElementById("print-area");
+        printArea.innerHTML = "";
+
+        // 2. Nome do Arquivo
+        let finalFileName = "Relatorio.pdf";
+        const firstSection = document.querySelector('.report-section');
+        if (firstSection) {
+            const nomeCliente = firstSection.querySelector('.inp-cliente').value.toUpperCase().trim() || "CLIENTE";
+            const numContainer = firstSection.querySelector('.inp-container').value.toUpperCase().trim() || "CONTAINER";
+            const numBL = firstSection.querySelector('.inp-bl').value.toUpperCase().trim() || "BL";
+            
+            const safeCliente = nomeCliente.replace(/[<>:"/\\|?*]/g, '');
+            finalFileName = `${safeCliente} - ${numContainer} - ${numBL}.pdf`;
+        }
+
+        // 3. Geração
+        const sections = document.querySelectorAll('.report-section');
+        for (let section of sections) {
+            const type = section.dataset.type; 
+            const subtype = section.querySelector('.inp-subtype') ? section.querySelector('.inp-subtype').value : "";
+            
+            const data = {
+                cliente: section.querySelector('.inp-cliente').value.toUpperCase(),
+                data: section.querySelector('.inp-data').value, 
+                container: section.querySelector('.inp-container').value.toUpperCase(),
+                bl: section.querySelector('.inp-bl').value.toUpperCase(),
+                obs: section.querySelector('.inp-obs').value
+            };
+
+            const photos = [];
+            section.querySelectorAll('.photo-grid .photo-slot input[type="file"]').forEach(inp => { if(inp.files[0]) photos.push(inp.files[0]); });
+
+            let title = "RELATÓRIO";
+            if (type === 'bagagem') {
+                if(subtype === 'desova') title = "RELATÓRIO DE BAGAGEM - DESOVA";
+                else if(subtype === 'ovacao') title = "RELATÓRIO DE BAGAGEM - OVAÇÃO";
+                else title = "RELATÓRIO DE AVARIA - BAGAGEM";
+                await createReportPages(title, createBagagemHTML(section, data, subtype), photos, printArea, true);
+            } else {
+                title = "TERMO DE AVARIA E/OU FALTA";
+                await createReportPages(title, createTermoHTML(section, data), photos, printArea, false);
+            }
+        }
+
+        try {
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pages = document.querySelectorAll(".pdf-page");
+            
+            if (pages.length === 0) {
+                alert("Nenhum formulário encontrado.");
+                return;
+            }
+
+            for (let i = 0; i < pages.length; i++) {
+                const canvas = await html2canvas(pages[i], { scale: 1.5, useCORS: true });
+                const imgData = canvas.toDataURL('image/jpeg', 0.85);
+                const pdfWidth = 210; 
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                if (i > 0) pdf.addPage();
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+            }
+            pdf.save(finalFileName);
+
+        } catch (err) {
+            alert("Erro: " + err.message);
+        } finally {
+            btn.innerText = "⬇️ Baixar PDF Completo";
+            btn.disabled = false;
+        }
+    }
+   async function generateAllPDFs() {
+        // -----------------------------------------------------------
+        // 1. BLOQUEIO DE SEGURANÇA (VALIDAÇÃO)
+        // -----------------------------------------------------------
+        const validationErrors = validateForms(); // Chama a função do Passo 1
+        
+        if (validationErrors.length > 0) {
+            // Se houver erros, mostra o alerta e PARA TUDO.
+
+            alert("⚠️ Relatório Não liberado!\n\nPor favor, corrija os seguintes erros (campos em vermelho) :\n\n" + validationErrors.join("\n"));
+
+            return; // <<-- O SCRIPT PARA AQUI SE TIVER ERRO
+        }
+
+        // Se chegou aqui, está tudo válido. Continua a geração.
+        const btn = document.getElementById("btn-download");
+        btn.innerText = "⏳ Gerando...";
+        btn.disabled = true;
+        const printArea = document.getElementById("print-area");
+        printArea.innerHTML = "";
+
+        // -----------------------------------------------------------
+        // 2. DEFINIÇÃO DO NOME DO ARQUIVO (Nome - Container - BL)
+        // -----------------------------------------------------------
+        let finalFileName = "Relatorio.pdf";
+        const firstSection = document.querySelector('.report-section');
+        
+        if (firstSection) {
+            const nomeCliente = firstSection.querySelector('.inp-cliente').value.toUpperCase().trim() || "CLIENTE";
+            const numContainer = firstSection.querySelector('.inp-container').value.toUpperCase().trim() || "CONTAINER";
+            const numBL = firstSection.querySelector('.inp-bl').value.toUpperCase().trim() || "BL";
+
+            // Remove caracteres inválidos para nome de arquivo
+            const safeCliente = nomeCliente.replace(/[<>:"/\\|?*]/g, '');
+            
+            finalFileName = `${safeCliente} - ${numContainer} - ${numBL}.pdf`;
+        }
+
+        // -----------------------------------------------------------
+        // 3. GERAÇÃO DO CONTEÚDO VISUAL
+        // -----------------------------------------------------------
+        const sections = document.querySelectorAll('.report-section');
+
+        for (let section of sections) {
+            const type = section.dataset.type; 
+            const subtype = section.querySelector('.inp-subtype') ? section.querySelector('.inp-subtype').value : "";
+            
+            const data = {
+                cliente: section.querySelector('.inp-cliente').value.toUpperCase(),
+                data: section.querySelector('.inp-data').value, 
+                container: section.querySelector('.inp-container').value.toUpperCase(),
+                bl: section.querySelector('.inp-bl').value.toUpperCase(),
+                obs: section.querySelector('.inp-obs').value
+            };
+
+            const photos = [];
+            section.querySelectorAll('.photo-grid .photo-slot input[type="file"]').forEach(inp => { if(inp.files[0]) photos.push(inp.files[0]); });
+
+            let title = "RELATÓRIO";
+            if (type === 'bagagem') {
+                if(subtype === 'desova') title = "RELATÓRIO DE BAGAGEM - DESOVA";
+                else if(subtype === 'ovacao') title = "RELATÓRIO DE BAGAGEM - OVAÇÃO";
+                else title = "RELATÓRIO DE AVARIA - BAGAGEM";
+                await createReportPages(title, createBagagemHTML(section, data, subtype), photos, printArea, true);
+            } else {
+                title = "TERMO DE AVARIA E/OU FALTA";
+                await createReportPages(title, createTermoHTML(section, data), photos, printArea, false);
+            }
+        }
+
+        // -----------------------------------------------------------
+        // 4. CRIAÇÃO DO ARQUIVO PDF
+        // -----------------------------------------------------------
+        try {
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pages = document.querySelectorAll(".pdf-page");
+            
+            if (pages.length === 0) {
+                alert("Nenhum formulário encontrado para gerar.");
+                return;
+            }
+
+            for (let i = 0; i < pages.length; i++) {
+                const canvas = await html2canvas(pages[i], { scale: 1.5, useCORS: true });
+                const imgData = canvas.toDataURL('image/jpeg', 0.85);
+                const pdfWidth = 210; 
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                if (i > 0) pdf.addPage();
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+            }
+            
+            // Salva com o nome personalizado
+            pdf.save(finalFileName);
+
+        } catch (err) {
+            alert("Erro ao gerar PDF: " + err.message);
+            console.error(err);
+        } finally {
+            btn.innerText = "⬇️ Baixar PDF Completo";
+            btn.disabled = false;
+        }
+    }
+
+    async function createReportPages(title, contentHTML, photos, container, hasSignature) {
+        let currentPhotoIndex = 0;
+        const MAX_P1 = 4;
+        const MAX_PX = 6;
+
+        const page1 = document.createElement("div");
+        page1.className = "pdf-page";
+        page1.innerHTML = createHeaderHTML(title);
+        page1.innerHTML += contentHTML;
+        page1.innerHTML += `<div class="section-separator">REGISTRO FOTOGRÁFICO</div>`;
+        const photosP1 = photos.slice(0, MAX_P1);
+        if(photosP1.length > 0) page1.appendChild(createPhotoGrid(photosP1));
+        currentPhotoIndex = photosP1.length;
+        container.appendChild(page1);
+
+        while (currentPhotoIndex < photos.length) {
+            const pageX = document.createElement("div");
+            pageX.className = "pdf-page";
+            pageX.innerHTML = createHeaderHTML(title);
+            pageX.innerHTML += `<div class="section-separator">REGISTRO FOTOGRÁFICO (CONT.)</div>`;
+            const batch = photos.slice(currentPhotoIndex, currentPhotoIndex + MAX_PX);
+            pageX.appendChild(createPhotoGrid(batch));
+            currentPhotoIndex += batch.length;
+            container.appendChild(pageX);
+        }
+
+        if (hasSignature) {
+            container.lastElementChild.insertAdjacentHTML('beforeend', `<div class="signatures-box"><div class="sig-line">Conferente</div><div class="sig-line">Responsável Operacional</div></div>`);
+        }
+    }
+
+    function createHeaderHTML(title) {
+        const logoUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFI3SlrXTt-VhY7jWN5uNmso13GRBRohbxEA&s";
+        return `
+        <div class="header-bar">
+            <div style="width:150px;"></div> 
+            <div class="header-title">${title}</div>
+            <div class="ws-logo-container" style="background: white; padding: 4px 10px; border-radius: 4px; display: flex; align-items: center;
+             justify-content: center; height: 35px; min-width:20px;">
+                <img src="${logoUrl}" style="height: 40px; width: auto; object-fit: contain;" crossorigin="anonymous">
+            </div>
+        </div>`;
+    }
+
+    function createBagagemHTML(section, data, subtype) {
+        let labelLacre = "LACRE";
+        if(subtype === 'desova') labelLacre = "LACRE DE ORIGEM";
+        if(subtype === 'ovacao') labelLacre = "LACRE DO TERMINAL";
+
+        const lacre = section.querySelector('.inp-lacre').value.toUpperCase();
+        const cpf = section.querySelector('.inp-cpf').value;
+        const avaria = section.querySelector('.inp-avaria').value === "Sim" ? "[ X ]" : "[   ]";
+        const acomp = section.querySelector('.inp-acomp').value === "Sim" ? "[ X ]" : "[   ]";
+        const mercadoria = "BAGAGEM";
+
+        const getList = (idx) => {
+            const container = section.querySelectorAll('.container-staff')[idx];
+            return Array.from(container.querySelectorAll('input'))
+                .map(i => i.value.toUpperCase())
+                .filter(v=>v)
+                .map(n => `<div style="margin-bottom:2px;">${n}</div>`)
+                .join("");
+        };
+        const conf = getList(0) || "&nbsp;";
+        const oper = getList(1) || "&nbsp;";
+        const aux = getList(2) || "&nbsp;";
+
+        const cpfRow = (subtype !== 'bagagem_avaria') ? `<tr><td class="label-cell">CPF:</td><td class="value-cell">${cpf}</td></tr>` : "";
+
+        return `
+        <table class="master-table">
+            <tr>
+                <td class="col-left" style="height: 1px;"> 
+                    <table class="inner-data-table" style="height: 100%;">
+                        <tr><td class="label-cell">CLIENTE:</td><td class="value-cell">${data.cliente}</td></tr>
+                        ${cpfRow}
+                        <tr><td class="label-cell">CONTAINER:</td><td class="value-cell">${data.container}</td></tr>
+                        <tr><td class="label-cell">MERCADORIA:</td><td class="value-cell">${mercadoria}</td></tr>
+                        <tr><td class="label-cell">DATA DO SERVIÇO:</td><td class="value-cell">${data.data}</td></tr>
+                        <tr><td class="label-cell">BL:</td><td class="value-cell">${data.bl}</td></tr>
+                        <tr><td class="label-cell">${labelLacre}:</td><td class="value-cell">${lacre}</td></tr>
+                        <tr><td class="label-cell">HOUVE AVARIA?</td><td class="value-cell checkbox-pdf">${avaria}</td></tr>
+                        <tr><td class="label-cell">ACOMPANHAMENTO?</td><td class="value-cell checkbox-pdf">${acomp}</td></tr>
+                    </table>
+                </td>
+                
+                <td class="col-right" style="height: 1px;"> 
+                    <table class="team-table" style="height: 100%;">
+                        <tr style="height: 20px;"><td colspan="2" class="team-header-cell">PESSOAS QUE ACOMPANHARAM:</td></tr>
+                        <tr style="height: 18px;"><td class="team-sub-header" style="width:40%;">CARGO</td><td class="team-sub-header">PESSOAS</td></tr>
+                        
+                        <tr style="height: 1px;"><td class="team-role-cell">CONFERENTE</td><td class="team-names-cell" style="vertical-align: top;">${conf}</td></tr>
+                        <tr style="height: 1px;"><td class="team-role-cell">OP. EMPILHADEIRA</td><td class="team-names-cell" style="vertical-align: top;">${oper}</td></tr>
+                        
+                        <tr class="row-auxiliares">
+                            <td class="team-role-cell cell-auxiliares">AUXILIARES</td>
+                            <td class="team-names-cell cell-auxiliares">${aux}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="border-top: 1px solid #000; padding: 10px; font-size: 14px; text-align: left;">
+                    ${data.obs}
+                </td>
+            </tr>
+        </table>`;
+    }
+
+    function createTermoHTML(section, data) {
+        // Agora busca o valor do select de Serviço
+        const servico = section.querySelector('.inp-servico').value.toUpperCase();
+        const qtd = section.querySelector('.inp-qtd').value;
+        let avariasLi = "";
+        
+        // Pega os checkboxes normais
+        const checkboxes = section.querySelectorAll('.checkbox-grid input[type="checkbox"]:checked');
+        checkboxes.forEach(cb => { 
+            // Se for o checkbox "Outro", pega o valor do input de texto ao lado
+            if (cb.value === "OUTRO") {
+                const otherText = section.querySelector('.inp-other-avaria').value.toUpperCase();
+                if(otherText) avariasLi += `<li>${otherText}</li>`;
+            } else {
+                avariasLi += `<li>${cb.value}</li>`; 
+            }
+        });
+        
+        // Preenchimento de linhas vazias para layout
+        for(let i=checkboxes.length; i<6; i++) { avariasLi += `<li>&nbsp;</li>`; }
+
+        return `
+        <table class="master-table">
+            <tr>
+                <td class="col-left">
+                    <table class="inner-data-table">
+                        <tr><td class="label-cell">CLIENTE:</td><td class="value-cell">${data.cliente}</td></tr>
+                        <tr><td class="label-cell">DATA:</td><td class="value-cell">${data.data}</td></tr>
+                        <tr><td class="label-cell">CONTAINER:</td><td class="value-cell">${data.container}</td></tr>
+                        <tr><td class="label-cell">BL:</td><td class="value-cell">${data.bl}</td></tr>
+                        <tr><td class="label-cell">SERVIÇO:</td><td class="value-cell">${servico}</td></tr>
+                        <tr><td class="label-cell">QTD AVARIAS:</td><td class="value-cell">${qtd}</td></tr>
+                    </table>
+                    <div class="obs-cell-left" style="border-top:1px solid #000; font-size: 14px;">${data.obs}</div>
+                </td>
+                <td class="col-right" rowspan="2">
+                    <div class="right-header">TIPO DE AVARIA</div>
+                    <ul class="avaria-list">${avariasLi}</ul>
+                </td>
+            </tr>
+        </table>`;
+    }
+
+    function createPhotoGrid(photos) {
+        const table = document.createElement("table");
+        table.className = "photo-grid-table";
+        for (let i = 0; i < photos.length; i += 2) {
+            let tr = document.createElement("tr");
+            let td1 = document.createElement("td");
+            let img1 = document.createElement("img");
+            img1.src = URL.createObjectURL(photos[i]);
+            td1.appendChild(img1);
+            tr.appendChild(td1);
+            let td2 = document.createElement("td");
+            if (photos[i+1]) {
+                let img2 = document.createElement("img");
+                img2.src = URL.createObjectURL(photos[i+1]);
+                td2.appendChild(img2);
+            } else { td2.innerHTML = "&nbsp;"; }
+            tr.appendChild(td2);
+            table.appendChild(tr);
+        }
+        return table;
+    }
+
+</script>
+
+
+
+</body>
+
+</html>
