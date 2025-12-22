@@ -337,6 +337,51 @@
         /* Mostra o botão quando tem imagem */
         .photo-slot.has-image .delete-icon-btn {
             display: block;
+
+            /* --- CAIXA DE TEXTO FLUTUANTE --- */
+        .floating-text-box {
+            position: absolute;
+            display: none; /* Escondido por padrão */
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px dashed var(--ws-blue);
+            padding: 5px;
+            cursor: move;
+            z-index: 100;
+            min-width: 100px;
+        }
+        .floating-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            width: 100%;
+            resize: none;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .text-controls {
+            position: absolute;
+            top: -35px;
+            left: 0;
+            background: #333;
+            padding: 3px;
+            border-radius: 4px;
+            display: flex;
+            gap: 5px;
+        }
+        .text-btn {
+            cursor: pointer;
+            background: #555;
+            color: white;
+            border: 1px solid #777;
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-size: 12px;
+        }
+        .text-btn:hover { background: #777; }
+        .confirm-btn { background: #28a745; border-color: #28a745; }
+        .cancel-btn { background: #dc3545; border-color: #dc3545; }
         }
     </style>
  <head>
@@ -448,29 +493,20 @@
        
 
         <div class="editor-toolbar">
-
             <button class="tool-btn" onclick="setTool('pen')" id="btn-pen">✏️ Caneta</button>
-
             <button class="tool-btn" onclick="setTool('ellipse')" id="btn-ellipse">⭕ Elipse</button>
-
-            <button class="tool-btn" onclick="toggleCrop()" id="btn-crop">✂️ Cortar (Arraste)</button>
-
-            <button class="tool-btn" onclick="undoLast()">↩️ Desfazer</button>
-
+            <button class="tool-btn" onclick="setTool('text')" id="btn-text">🔤 Texto</button> <button class="tool-btn" onclick="toggleCrop()" id="btn-crop">✂️ Cortar (Arraste)</button>
+            
+            <div style="flex:1;"></div> <button class="tool-btn" onclick="undoLast()">↩️ Desfazer</button>
             <button class="tool-btn" onclick="clearCanvas()">🗑️ Limpar</button>
-
-           
-
+            
             <div class="color-picker">
-
                 <span style="font-size:12px; font-weight:bold;">Cor:</span>
-
+                <div class="color-option" style="background: black;" onclick="setColor('black')" id="color-black"></div>
                 <div class="color-option" style="background: red;" onclick="setColor('red')" id="color-red"></div>
-
+                <div class="color-option" style="background: #ffcc00;" onclick="setColor('#ffcc00')" id="color-#ffcc00" title="Amarelo"></div>
                 <div class="color-option" style="background: blue;" onclick="setColor('blue')" id="color-blue"></div>
-
             </div>
-
         </div>
 
 
@@ -626,7 +662,63 @@
 
 
 <script>
-    
+    // --- FUNÇÃO GLOBAL DE COLAR (CTRL+V) ---
+    // Esta função gerencia onde a imagem será colada
+    // --- FUNÇÃO GLOBAL DE COLAR (CTRL+V) - CENTRALIZADA E AJUSTADA ---
+    document.addEventListener('paste', function(e) {
+        const modal = document.getElementById('imageEditorModal');
+        
+        // 1. SE O MODAL DE EDIÇÃO ESTIVER ABERTO -> COLA NO CANVAS
+        if (modal.style.display === 'flex') {
+            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+            for (let index in items) {
+                const item = items[index];
+                if (item.kind === 'file' && item.type.includes('image/')) {
+                    const blob = item.getAsFile();
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const img = new Image();
+                        img.onload = function() {
+                            // Salva estado antes de colar
+                            saveState();
+                            
+                            // Limpa o canvas para receber a nova imagem limpa
+                            ctx.clearRect(0, 0, canvas.width, canvas.height); 
+
+                            // --- LÓGICA DE CENTRALIZAÇÃO E REDIMENSIONAMENTO (CONTAIN) ---
+                            const canvasRatio = canvas.width / canvas.height;
+                            const imgRatio = img.width / img.height;
+                            
+                            let drawWidth, drawHeight, offsetX, offsetY;
+
+                            // Se a imagem for mais larga que o canvas (proporcionalmente)
+                            if (imgRatio > canvasRatio) {
+                                drawWidth = canvas.width;
+                                drawHeight = canvas.width / imgRatio;
+                                offsetX = 0;
+                                offsetY = (canvas.height - drawHeight) / 2; // Centraliza verticalmente
+                            } 
+                            // Se a imagem for mais alta
+                            else {
+                                drawHeight = canvas.height;
+                                drawWidth = canvas.height * imgRatio;
+                                offsetY = 0;
+                                offsetX = (canvas.width - drawWidth) / 2; // Centraliza horizontalmente
+                            }
+
+                            // Desenha a imagem centralizada
+                            ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+                        }
+                        img.src = event.target.result;
+                    }
+                    reader.readAsDataURL(blob);
+                    e.preventDefault(); // Impede comportamento padrão
+                    break;
+                }
+            }
+        }
+        // 2. SE O MODAL ESTIVER FECHADO -> O COMPORTAMENTO DA GRADE JÁ ESTÁ NO 'addPhotoSlotToGrid'
+    });
 
    const opcoes = {
         "termo": [ { val: "avaria_origem", text: "Avaria de Origem" }, { val: "avaria_interna", text: "Avaria Interna" } ],
@@ -1184,12 +1276,38 @@
             y: (evt.clientY - rect.top) * (canvas.height / rect.height)
         };
     }
-
-    function startDrawing(e) {
+function startDrawing(e) {
         const pos = getMousePos(e);
         startX = pos.x;
         startY = pos.y;
         isDrawing = true;
+
+        // --- LÓGICA DE TEXTO (NOVA) ---
+        if (currentTool === 'text') {
+            isDrawing = false; // Texto não é um desenho contínuo (arrastar)
+            
+            // Abre uma caixa para digitar
+            const text = prompt("Digite o texto para inserir na imagem:");
+            
+            if (text && text.trim() !== "") {
+                saveState(); // Salva para poder desfazer (Ctrl+Z)
+                
+                ctx.font = "bold 40px Arial"; // Tamanho e fonte do texto
+                ctx.fillStyle = currentColor;
+                ctx.textAlign = "left";
+                ctx.textBaseline = "middle";
+                
+                // Desenha o texto na posição do clique
+                ctx.fillText(text, pos.x, pos.y);
+                
+                // (Opcional) Adiciona uma borda branca fina para ler melhor em fundos escuros
+                ctx.strokeStyle = "white";
+                ctx.lineWidth = 1;
+                ctx.strokeText(text, pos.x, pos.y);
+            }
+            return;
+        }
+        // -------------------------------
 
         if (!isCropping) {
             ctx.beginPath();
@@ -1315,11 +1433,20 @@
     function setTool(tool) {
         currentTool = tool;
         isCropping = (tool === 'crop');
+        
+        // Remove classe ativa de todos
         document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-        if(tool === 'pen') document.getElementById('btn-pen').classList.add('active');
-        if(tool === 'ellipse') document.getElementById('btn-ellipse').classList.add('active');
-        if(tool === 'crop') document.getElementById('btn-crop').classList.add('active');
-        canvas.style.cursor = tool === 'crop' ? 'crosshair' : 'default';
+        
+        // Adiciona classe ativa no botão clicado
+        // Verifica se o botão existe antes de adicionar a classe (para evitar erros se mudar nomes)
+        const btnId = 'btn-' + (tool === '#' || tool.startsWith('#') ? 'pen' : tool); // Fallback simples
+        const btn = document.getElementById(btnId);
+        if(btn) btn.classList.add('active');
+
+        // Muda o cursor
+        if (tool === 'crop') canvas.style.cursor = 'crosshair';
+        else if (tool === 'text') canvas.style.cursor = 'text';
+        else canvas.style.cursor = 'default';
     }
 
     function toggleCrop() {
