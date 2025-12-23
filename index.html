@@ -8,9 +8,6 @@
 
 
 
-    <head>
-
-
 
         <meta charset="UTF-8">
 
@@ -1009,6 +1006,43 @@
         }
 
         .cancel-float-btn:hover { transform: scale(1.1); background: #c82333; }
+
+        /* --- MELHORIAS MOBILE (UX) --- */
+@media (max-width: 768px) {
+    /* 1. Modal de Edição em Tela Cheia */
+    .modal-content {
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        border-radius: 0 !important;
+        padding: 10px !important;
+    }
+    
+    /* 2. Botões de Ferramentas Maiores (Fácil de tocar) */
+    .tool-btn {
+        padding: 12px 15px !important;
+        font-size: 14px !important;
+        flex: 1; /* Distribui o espaço igualmente */
+        justify-content: center;
+    }
+    
+    /* 3. Área de Cores maior */
+    .color-option {
+        width: 30px !important;
+        height: 30px !important;
+        margin: 0 5px !important;
+    }
+
+    /* 4. Bolinha de Redimensionar Texto (Handle) Gigante */
+    .resize-handle {
+        width: 30px !important; /* Muito maior para o dedo pegar */
+        height: 30px !important;
+        right: -15px !important;
+        bottom: -15px !important;
+        background: var(--ws-cyan);
+        box-shadow: 0 0 5px rgba(0,0,0,0.5);
+    }
+}
 
         </style>
 
@@ -2574,175 +2608,124 @@
 
         // --- FUNÇÃO DE VALIDAÇÃO GERAL COM SINALIZAÇÃO VISUAL ---
 
-        function validateForms() {
-
-            const sections = document.querySelectorAll('.report-section');
-
-            let errors = [];
-
-
-
-            // Limpa erros visuais anteriores
-
-            document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
-
-
-
-            sections.forEach((section, index) => {
-
-                const type = section.dataset.type;
-
-                const subtype = section.querySelector('.inp-subtype') ? section.querySelector('.inp-subtype').value : type;
-
-                const formName = `📝 Formulário ${index + 1} (${subtype.toUpperCase().replace('_', ' ')})`;
-
-                let formErrors = [];
-
-
-
-                // Helper para marcar erro
-
-                const markError = (input, msg) => {
-
-                    if(input) input.classList.add('input-error');
-
-                    formErrors.push(`   • ${msg}`);
-
-                };
-
-
-
-                // --- Validação Campos Comuns ---
-
-                const clienteInp = section.querySelector('.inp-cliente');
-
-                const dataInp = section.querySelector('.inp-data');
-
-                const containerInp = section.querySelector('.inp-container');
-
-                const blInp = section.querySelector('.inp-bl');
-
-
-
-                if (!clienteInp.value.trim()) markError(clienteInp, "Cliente é obrigatório");
-
-                if (!blInp.value.trim()) markError(blInp, "BL é obrigatório");
-
-                
-
-                // Validação Container
-
-                if (!containerInp.value.trim()) {
-
-                    markError(containerInp, "Container é obrigatório");
-
-                } else if (!/^[A-Z]{4}\d{7}$/.test(containerInp.value.trim())) {
-
-                    markError(containerInp, "Container inválido (4 letras + 7 números)");
-
-                }
-
-
-
-                // Validação Data
-
-                if (!dataInp.value.trim()) {
-
-                    markError(dataInp, "Data do Serviço é obrigatória");
-
-                } else {
-
-                    const dateMsg = checkDate(dataInp.value.trim());
-
-                    if (dateMsg !== true) markError(dataInp, dateMsg);
-
-                }
-
-
-
-                // --- Validação Específica ---
-
-                if (type === 'termo') {
-
-                    const qtdInp = section.querySelector('.inp-qtd');
-
-                    if (!qtdInp.value.trim()) markError(qtdInp, "Qtd Avarias é obrigatória");
-
-                    
-
-                    const checkboxes = section.querySelectorAll('.checkbox-grid input[type="checkbox"]:checked');
-
-                    if (checkboxes.length === 0) {
-
-                        // Marca a grid inteira como erro visualmente
-
-                        section.querySelector('.checkbox-grid').classList.add('input-error');
-
-                        formErrors.push("   • Selecione pelo menos um Tipo de Avaria");
-
-                    }
-
-                } 
-
-                else if (type === 'bagagem') {
-
-                    const lacreInp = section.querySelector('.inp-lacre');
-
-                    if (!lacreInp.value.trim()) markError(lacreInp, "Lacre é obrigatório");
-
-                    
-
-                    const cpfInp = section.querySelector('.inp-cpf');
-
-                    const isCpfVisible = cpfInp && cpfInp.closest('.col').style.display !== 'none';
-
-                    
-
-                    if (isCpfVisible && !cpfInp.value.trim()) {
-
-                        markError(cpfInp, "CPF é obrigatório");
-
-                    }
-
-                }
-
-
-
-                if (formErrors.length > 0) {
-
-                    errors.push(`${formName}:\n${formErrors.join("\n")}`);
-
-                }
-
-            });
-
-
-
-            return errors;
-
-        }
-
-
-
-        // Função para habilitar campo "Outro" nas avarias
-
-        function toggleOtherAvaria(checkbox) {
-
-            const input = checkbox.parentElement.querySelector('.inp-other-avaria');
-
-            if (input) {
-
-                input.disabled = !checkbox.checked;
-
-                if (checkbox.checked) input.focus();
-
-                else input.value = '';
-
+      // --- FUNÇÃO DE VALIDAÇÃO UNIFICADA ---
+    function validateForms() {
+        const sections = document.querySelectorAll('.report-section');
+        let errors = [];
+
+        // 1. Limpa erros visuais anteriores (reseta o estado)
+        document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
+
+        // 2. Itera sobre cada formulário aberto
+        sections.forEach((section, index) => {
+            const type = section.dataset.type;
+            const subtype = section.querySelector('.inp-subtype') ? section.querySelector('.inp-subtype').value : type;
+            
+            // Título amigável para o erro
+            const formName = `📝 Formulário ${index + 1} (${subtype.toUpperCase().replace('_', ' ')})`;
+            let formErrors = [];
+
+            // --- Helper interno para marcar erro ---
+            const markError = (input, msg) => {
+                if(input) input.classList.add('input-error'); // Adiciona borda vermelha
+                formErrors.push(`   • ${msg}`); // Adiciona texto na lista
+            };
+
+            // --- A. Validação de Campos Comuns (Todos os formulários têm) ---
+            const clienteInp = section.querySelector('.inp-cliente');
+            const dataInp = section.querySelector('.inp-data');
+            const containerInp = section.querySelector('.inp-container');
+            const blInp = section.querySelector('.inp-bl');
+
+            if (!clienteInp.value.trim()) markError(clienteInp, "Cliente é obrigatório");
+            if (!blInp.value.trim()) markError(blInp, "BL é obrigatório");
+            
+            // Validação Container (4 letras + 7 números)
+            if (!containerInp.value.trim()) {
+                markError(containerInp, "Container é obrigatório");
+            } else if (!/^[A-Z]{4}\d{7}$/.test(containerInp.value.trim())) {
+                markError(containerInp, "Container inválido (Ex: ABCD1234567)");
             }
 
+            // Validação Data (usa a função auxiliar checkDate)
+            if (!dataInp.value.trim()) {
+                markError(dataInp, "Data do Serviço é obrigatória");
+            } else {
+                const dateMsg = checkDate(dataInp.value.trim());
+                if (dateMsg !== true) markError(dataInp, dateMsg);
+            }
+
+            // --- B. Validação Específica: TERMO DE FALTA/AVARIA ---
+            if (type === 'termo') {
+                const qtdInp = section.querySelector('.inp-qtd');
+                if (!qtdInp.value.trim()) markError(qtdInp, "Qtd Avarias é obrigatória");
+                
+                // Verifica se pelo menos um checkbox foi marcado
+                const checkboxes = section.querySelectorAll('.checkbox-grid input[type="checkbox"]:checked');
+                if (checkboxes.length === 0) {
+                    // Marca a caixa inteira dos checkboxes como erro
+                    section.querySelector('.checkbox-grid').classList.add('input-error');
+                    formErrors.push("Selecione pelo menos um Tipo de Avaria");
+                }
+            } 
+            
+            // --- C. Validação Específica: BAGAGEM ---
+            else if (type === 'bagagem') {
+                const lacreInp = section.querySelector('.inp-lacre');
+                if (!lacreInp.value.trim()) markError(lacreInp, "Lacre é obrigatório");
+                
+                // Validação inteligente de CPF
+                // Só valida se o campo estiver VISÍVEL na tela
+                const cpfInp = section.querySelector('.inp-cpf');
+                const colCpf = cpfInp ? cpfInp.closest('.col') : null;
+                const isCpfVisible = colCpf && colCpf.style.display !== 'none';
+                
+                if (isCpfVisible) {
+                    if (!cpfInp.value.trim()) {
+                        markError(cpfInp, "CPF é obrigatório");
+                    } else if (cpfInp.value.length < 14) {
+                        markError(cpfInp, "CPF incompleto");
+                    }
+                }
+            }
+
+            // Se houve erros neste formulário, adiciona ao relatório final
+            if (formErrors.length > 0) {
+                errors.push(`${formName}:\n${formErrors.join("\n")}`);
+            }
+        });
+
+        return errors;
+    }
+
+    // --- FUNÇÃO AUXILIAR: VALIDAÇÃO DE DATA ---
+    // Retorna 'true' se válido, ou uma 'string' com a mensagem de erro
+    function checkDate(dateString) {
+        // 1. Formato básico regex
+        if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) return "Data inválida (use dd/mm/aaaa).";
+
+        const [day, month, year] = dateString.split('/').map(Number);
+        const date = new Date(year, month - 1, day);
+        
+        // 2. Data inexistente (ex: 30 de Fevereiro)
+        if (date.getFullYear() !== year || date.getMonth() + 1 !== month || date.getDate() !== day) {
+            return "Data inexistente no calendário.";
         }
+        
+        const now = new Date();
+        now.setHours(0,0,0,0); // Zera hora para comparar apenas dias
+        
+        // 3. Regra: Não permitir data futura
+        if (date > now) return "Data futura não permitida.";
+        
+        // 4. Regra: Não permitir data muito antiga (ex: mais de 4 anos atrás)
+        const minDate = new Date(now);
+        minDate.setFullYear(now.getFullYear() - 4); 
 
+        if (date < minDate) return "Data muito antiga (limite de 4 anos).";
 
+        return true;
+    }
 
         function removeSection(btn) {
 
@@ -2900,17 +2883,32 @@
 
 
 
-        function handleFileSelect(input) {
-
-            if (input.files && input.files[0]) {
-
-                processFile(input.files[0], input.parentElement);
-
-                input.value = ''; 
-
+        async function handleFileSelect(input) {
+        if (input.files && input.files[0]) {
+            const originalFile = input.files[0];
+            
+            try {
+                // Cursor de espera
+                document.body.style.cursor = 'wait'; 
+                
+                // Tenta comprimir
+                const compressedFile = await compressImage(originalFile);
+                
+                // Envia o arquivo comprimido para o slot
+                // O processFile vai atualizar o 'input.files' com a nova versão
+                processFile(compressedFile, input.parentElement);
+                
+            } catch (error) {
+                console.error("Erro na compressão, usando original:", error);
+                processFile(originalFile, input.parentElement);
+            } finally {
+                document.body.style.cursor = 'default';
+                
+                // --- A LINHA ABAIXO FOI REMOVIDA PARA CORRIGIR O BUG ---
+                // input.value = ''; 
             }
-
         }
+    }
 
 
 
@@ -3038,70 +3036,60 @@
 
         // --- LÓGICA DO CANVAS ---
 
-        function initCanvasEvents() {
+       // ============================================================
+    // 4. FUNÇÕES DE CANVAS ATUALIZADAS (MOUSE + TOQUE)
+    // ============================================================
 
-            const newCanvas = canvas.cloneNode(true);
+    // --- FUNÇÃO AUXILIAR: Pega posição X/Y (Mouse ou Toque) ---
+    function getMousePos(evt) {
+        const rect = canvas.getBoundingClientRect();
+        
+        // Verifica se é evento de toque (celular) ou mouse (PC)
+        // Se for toque, pega o primeiro dedo (touches[0])
+        const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+        const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
 
-            canvas.parentNode.replaceChild(newCanvas, canvas);
+        return {
+            x: (clientX - rect.left) * (canvas.width / rect.width),
+            y: (clientY - rect.top) * (canvas.height / rect.height)
+        };
+    }
 
-            canvas = newCanvas;
-
-            ctx = canvas.getContext('2d');
-
-            
-
-            const img = new Image();
-
-            if(canvasHistory.length > 0) {
-
-                img.src = canvasHistory[canvasHistory.length-1];
-
-            } else {
-
-                img.src = imgObj.src;
-
-            }
-
-            
-
-            img.onload = function() { 
-
-                canvas.width = img.width;
-
-                canvas.height = img.height;
-
-                ctx.drawImage(img, 0, 0); 
-
-            }
-
-
-
-            canvas.addEventListener('mousedown', startDrawing);
-
-            canvas.addEventListener('mousemove', draw);
-
-            canvas.addEventListener('mouseup', stopDrawing);
-
-            canvas.addEventListener('mouseout', stopDrawing);
-
+    // --- INICIALIZADOR DE EVENTOS (ATUALIZADO PARA TOUCH) ---
+    function initCanvasEvents() {
+        // Clona o canvas para limpar eventos anteriores (evita duplicação)
+        const newCanvas = canvas.cloneNode(true);
+        canvas.parentNode.replaceChild(newCanvas, canvas);
+        canvas = newCanvas;
+        ctx = canvas.getContext('2d');
+        
+        // Restaura a imagem que estava desenhada
+        const img = new Image();
+        if(canvasHistory.length > 0) {
+            img.src = canvasHistory[canvasHistory.length-1];
+        } else {
+            img.src = imgObj.src;
+        }
+        
+        img.onload = function() { 
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0); 
         }
 
+        // --- Eventos de Mouse (Computador) ---
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
 
-
-        function getMousePos(evt) {
-
-            const rect = canvas.getBoundingClientRect();
-
-            return {
-
-                x: (evt.clientX - rect.left) * (canvas.width / rect.width),
-
-                y: (evt.clientY - rect.top) * (canvas.height / rect.height)
-
-            };
-
-        }
-
+        // --- Eventos de Toque (Celular/Tablet) ---
+        // 'passive: false' é obrigatório para o preventDefault funcionar e a tela não rolar
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); }, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing, { passive: false });
+    }
+       
         // Função para Cancelar o Texto (Botão X)
 
     function cancelText() {
@@ -3552,367 +3540,142 @@
 
         // --- GERAÇÃO FINAL ---
 
-        async function generateAllPDFs() {
-
-            // 1. Validação Visual
-
+      async function generateAllPDFs() {
+            // -----------------------------------------------------------
+            // 1. VALIDAÇÃO (Usando o Modal Visual)
+            // -----------------------------------------------------------
             const errors = validateForms();
-
+            
             if (errors.length > 0) {
-
-                showErrors(errors); // Mostra o modal bonito
-
-                return;
-
+                // Usa a função showErrors existente para exibir o modal bonito
+                showErrors(errors); 
+                return; // Para a execução aqui se houver erros
             }
 
-
-
+            // -----------------------------------------------------------
+            // 2. PREPARAÇÃO DA INTERFACE
+            // -----------------------------------------------------------
             const btn = document.getElementById("btn-download");
-
-            btn.innerText = "⏳ Gerando...";
-
+            const originalText = btn.innerText;
+            btn.innerText = "⏳ Gerando PDF... (Aguarde)";
             btn.disabled = true;
-
+            
             const printArea = document.getElementById("print-area");
-
-            printArea.innerHTML = "";
-
-
-
-            // 2. Nome do Arquivo
-
-            let finalFileName = "Relatorio.pdf";
-
-            const firstSection = document.querySelector('.report-section');
-
-            if (firstSection) {
-
-                const nomeCliente = firstSection.querySelector('.inp-cliente').value.toUpperCase().trim() || "CLIENTE";
-
-                const numContainer = firstSection.querySelector('.inp-container').value.toUpperCase().trim() || "CONTAINER";
-
-                const numBL = firstSection.querySelector('.inp-bl').value.toUpperCase().trim() || "BL";
-
-                
-
-                const safeCliente = nomeCliente.replace(/[<>:"/\\|?*]/g, '');
-
-                finalFileName = `${safeCliente} - ${numContainer} - ${numBL}.pdf`;
-
-            }
-
-
-
-            // 3. Geração
-
-            const sections = document.querySelectorAll('.report-section');
-
-            for (let section of sections) {
-
-                const type = section.dataset.type; 
-
-                const subtype = section.querySelector('.inp-subtype') ? section.querySelector('.inp-subtype').value : "";
-
-                
-
-                const data = {
-
-                    cliente: section.querySelector('.inp-cliente').value.toUpperCase(),
-
-                    data: section.querySelector('.inp-data').value, 
-
-                    container: section.querySelector('.inp-container').value.toUpperCase(),
-
-                    bl: section.querySelector('.inp-bl').value.toUpperCase(),
-
-                    obs: section.querySelector('.inp-obs').value
-
-                };
-
-
-
-                const photos = [];
-
-                section.querySelectorAll('.photo-grid .photo-slot input[type="file"]').forEach(inp => { if(inp.files[0]) photos.push(inp.files[0]); });
-
-
-
-                let title = "RELATÓRIO";
-
-                if (type === 'bagagem') {
-
-                    if(subtype === 'desova') title = "RELATÓRIO DE BAGAGEM - DESOVA";
-
-                    else if(subtype === 'ovacao') title = "RELATÓRIO DE BAGAGEM - OVAÇÃO";
-
-                    else title = "RELATÓRIO DE AVARIA - BAGAGEM";
-
-                    await createReportPages(title, createBagagemHTML(section, data, subtype), photos, printArea, true);
-
-                } else {
-
-                    title = "TERMO DE AVARIA E/OU FALTA";
-
-                    await createReportPages(title, createTermoHTML(section, data), photos, printArea, false);
-
-                }
-
-            }
-
-
+            printArea.innerHTML = ""; // Limpa área de impressão
 
             try {
-
-                const pdf = new jsPDF('p', 'mm', 'a4');
-
-                const pages = document.querySelectorAll(".pdf-page");
-
+                // -----------------------------------------------------------
+                // 3. DEFINIÇÃO DO NOME DO ARQUIVO INTELIGENTE
+                // -----------------------------------------------------------
+                let finalFileName = "Relatorio_Operacional.pdf";
+                const firstSection = document.querySelector('.report-section');
                 
+                if (firstSection) {
+                    const type = firstSection.dataset.type;
+                    const subtype = firstSection.querySelector('.inp-subtype')?.value || "";
+                    
+                    // Captura valores e garante maiúsculas
+                    const cliente = firstSection.querySelector('.inp-cliente').value.toUpperCase().trim() || "CLIENTE";
+                    const container = firstSection.querySelector('.inp-container').value.toUpperCase().trim() || "CONTAINER";
+                    const bl = firstSection.querySelector('.inp-bl').value.toUpperCase().trim() || "BL";
+                    
+                    // Remove caracteres proibidos em nomes de arquivo Windows/Linux (< > : " / \ | ? *)
+                    const safeCliente = cliente.replace(/[<>:"/\\|?*]/g, '');
+                    
+                    // Define prefixo baseado no tipo
+                    let prefixo = "RELATORIO";
+                    if (type === 'termo') prefixo = "TFA"; // Termo de Falta/Avaria
+                    else if (subtype === 'desova') prefixo = "DESOVA";
+                    else if (subtype === 'ovacao') prefixo = "OVACAO";
+                    else if (type === 'bagagem') prefixo = "BAGAGEM";
 
-                if (pages.length === 0) {
-
-                    alert("Nenhum formulário encontrado.");
-
-                    return;
-
+                    // Monta: TIPO - CLIENTE - CONTAINER - BL.pdf
+                    finalFileName = `${prefixo} - ${safeCliente} - ${container} - ${bl}.pdf`;
                 }
 
+                // -----------------------------------------------------------
+                // 4. GERAÇÃO DO CONTEÚDO HTML (PÁGINAS)
+                // -----------------------------------------------------------
+                const sections = document.querySelectorAll('.report-section');
 
+                for (let section of sections) {
+                    const type = section.dataset.type; 
+                    const subtype = section.querySelector('.inp-subtype') ? section.querySelector('.inp-subtype').value : "";
+                    
+                    const data = {
+                        cliente: section.querySelector('.inp-cliente').value.toUpperCase(),
+                        data: section.querySelector('.inp-data').value, 
+                        container: section.querySelector('.inp-container').value.toUpperCase(),
+                        bl: section.querySelector('.inp-bl').value.toUpperCase(),
+                        obs: section.querySelector('.inp-obs').value
+                    };
+
+                    // Coleta as fotos (arquivos)
+                    const photos = [];
+                    section.querySelectorAll('.photo-grid .photo-slot input[type="file"]').forEach(inp => { 
+                        if(inp.files[0]) photos.push(inp.files[0]); 
+                    });
+
+                    // Define o Título do Cabeçalho
+                    let title = "RELATÓRIO OPERACIONAL";
+                    if (type === 'bagagem') {
+                        if(subtype === 'desova') title = "RELATÓRIO DE BAGAGEM - DESOVA";
+                        else if(subtype === 'ovacao') title = "RELATÓRIO DE BAGAGEM - OVAÇÃO";
+                        else title = "RELATÓRIO DE AVARIA - BAGAGEM";
+                        
+                        // Gera páginas de Bagagem
+                        await createReportPages(title, createBagagemHTML(section, data, subtype), photos, printArea, true);
+                    } else {
+                        title = "TERMO DE AVARIA E/OU FALTA";
+                        // Gera páginas de Termo
+                        await createReportPages(title, createTermoHTML(section, data), photos, printArea, false);
+                    }
+                }
+
+                // -----------------------------------------------------------
+                // 5. CONVERSÃO HTML -> PDF (JSPDF + HTML2CANVAS)
+                // -----------------------------------------------------------
+                // Pequeno delay para garantir que o DOM renderizou as imagens
+                await new Promise(r => setTimeout(r, 500));
+
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pages = document.querySelectorAll(".pdf-page");
+                
+                if (pages.length === 0) {
+                    throw new Error("Nenhuma página foi gerada. Verifique os formulários.");
+                }
 
                 for (let i = 0; i < pages.length; i++) {
+                    // Renderiza a div oculta como imagem
+                    const canvas = await html2canvas(pages[i], { 
+                        scale: 1.5, // Qualidade (1.5x é bom equilíbrio performance/qualidade)
+                        useCORS: true, // Permite carregar imagens externas se necessário
+                        logging: false 
+                    });
 
-                    const canvas = await html2canvas(pages[i], { scale: 1.5, useCORS: true });
-
-                    const imgData = canvas.toDataURL('image/jpeg', 0.85);
-
-                    const pdfWidth = 210; 
-
+                    const imgData = canvas.toDataURL('image/jpeg', 0.80); // Compressão JPEG 80%
+                    const pdfWidth = 210; // A4 largura mm
                     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
                     if (i > 0) pdf.addPage();
-
                     pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-
                 }
 
+                // Salva o arquivo
                 pdf.save(finalFileName);
 
-
-
             } catch (err) {
-
-                alert("Erro: " + err.message);
-
-            } finally {
-
-                btn.innerText = "⬇️ Baixar PDF Completo";
-
-                btn.disabled = false;
-
-            }
-
-        }
-
-    async function generateAllPDFs() {
-
-            // -----------------------------------------------------------
-
-            // 1. BLOQUEIO DE SEGURANÇA (VALIDAÇÃO)
-
-            // -----------------------------------------------------------
-
-            const validationErrors = validateForms(); // Chama a função do Passo 1
-
-            
-
-            if (validationErrors.length > 0) {
-
-                // Se houver erros, mostra o alerta e PARA TUDO.
-
-
-
-                alert("⚠️ Relatório Não liberado!\n\nPor favor, corrija os seguintes erros (campos em vermelho) :\n\n" + validationErrors.join("\n"));
-
-
-
-                return; // <<-- O SCRIPT PARA AQUI SE TIVER ERRO
-
-            }
-
-
-
-            // Se chegou aqui, está tudo válido. Continua a geração.
-
-            const btn = document.getElementById("btn-download");
-
-            btn.innerText = "⏳ Gerando...";
-
-            btn.disabled = true;
-
-            const printArea = document.getElementById("print-area");
-
-            printArea.innerHTML = "";
-
-
-
-            // -----------------------------------------------------------
-
-            // 2. DEFINIÇÃO DO NOME DO ARQUIVO (Nome - Container - BL)
-
-            // -----------------------------------------------------------
-
-           // 2. Nome do Arquivo
-            let finalFileName = "Relatorio.pdf";
-            const firstSection = document.querySelector('.report-section');
-            
-            if (firstSection) {
-                const tipo = firstSection.dataset.type; // Pega o tipo principal (bagagem ou termo)
-                const nomeCliente = firstSection.querySelector('.inp-cliente').value.toUpperCase().trim() || "CLIENTE";
-                const numContainer = firstSection.querySelector('.inp-container').value.toUpperCase().trim() || "CONTAINER";
-                const numBL = firstSection.querySelector('.inp-bl').value.toUpperCase().trim() || "BL";
-                
-                // Remove caracteres inválidos para nome de arquivo
-                const safeCliente = nomeCliente.replace(/[<>:"/\\|?*]/g, '');
-                
-                let prefixo = "Relatório";
-                
-                if (tipo === 'bagagem') {
-                    prefixo = "Relatório de Bagagem";
-                } else if (tipo === 'termo') {
-                    prefixo = "TFA";
-                }
-                
-                finalFileName = `${prefixo} - ${safeCliente} - ${numBL} - ${numContainer}.pdf`;
-            }
-
-
-            // -----------------------------------------------------------
-
-            // 3. GERAÇÃO DO CONTEÚDO VISUAL
-
-            // -----------------------------------------------------------
-
-            const sections = document.querySelectorAll('.report-section');
-
-
-
-            for (let section of sections) {
-
-                const type = section.dataset.type; 
-
-                const subtype = section.querySelector('.inp-subtype') ? section.querySelector('.inp-subtype').value : "";
-
-                
-
-                const data = {
-
-                    cliente: section.querySelector('.inp-cliente').value.toUpperCase(),
-
-                    data: section.querySelector('.inp-data').value, 
-
-                    container: section.querySelector('.inp-container').value.toUpperCase(),
-
-                    bl: section.querySelector('.inp-bl').value.toUpperCase(),
-
-                    obs: section.querySelector('.inp-obs').value
-
-                };
-
-
-
-                const photos = [];
-
-                section.querySelectorAll('.photo-grid .photo-slot input[type="file"]').forEach(inp => { if(inp.files[0]) photos.push(inp.files[0]); });
-
-
-
-                let title = "RELATÓRIO";
-
-                if (type === 'bagagem') {
-
-                    if(subtype === 'desova') title = "RELATÓRIO DE BAGAGEM - DESOVA";
-
-                    else if(subtype === 'ovacao') title = "RELATÓRIO DE BAGAGEM - OVAÇÃO";
-
-                    else title = "RELATÓRIO DE AVARIA - BAGAGEM";
-
-                    await createReportPages(title, createBagagemHTML(section, data, subtype), photos, printArea, true);
-
-                } else {
-
-                    title = "TERMO DE AVARIA E/OU FALTA";
-
-                    await createReportPages(title, createTermoHTML(section, data), photos, printArea, false);
-
-                }
-
-            }
-
-
-
-            // -----------------------------------------------------------
-
-            // 4. CRIAÇÃO DO ARQUIVO PDF
-
-            // -----------------------------------------------------------
-
-            try {
-
-                const pdf = new jsPDF('p', 'mm', 'a4');
-
-                const pages = document.querySelectorAll(".pdf-page");
-
-                
-
-                if (pages.length === 0) {
-
-                    alert("Nenhum formulário encontrado para gerar.");
-
-                    return;
-
-                }
-
-
-
-                for (let i = 0; i < pages.length; i++) {
-
-                    const canvas = await html2canvas(pages[i], { scale: 1.5, useCORS: true });
-
-                    const imgData = canvas.toDataURL('image/jpeg', 0.85);
-
-                    const pdfWidth = 210; 
-
-                    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-                    if (i > 0) pdf.addPage();
-
-                    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-
-                }
-
-                
-
-                // Salva com o nome personalizado
-
-                pdf.save(finalFileName);
-
-
-
-            } catch (err) {
-
-                alert("Erro ao gerar PDF: " + err.message);
-
                 console.error(err);
-
+                alert("Ocorreu um erro ao gerar o PDF:\n" + err.message);
             } finally {
-
-                btn.innerText = "⬇️ Baixar PDF Completo";
-
+                // Restaura o botão
+                btn.innerText = originalText;
                 btn.disabled = false;
-
+                printArea.innerHTML = ""; 
+                
+                // --- NOVO: Limpa o rascunho automático após sucesso ---
+                localStorage.removeItem(STORAGE_KEY); 
             }
-
         }
 
 
@@ -4263,7 +4026,157 @@
 
         }
 
+    // ============================================================
+    // SISTEMA DE AUTO-SAVE (LOCALSTORAGE)
+    // ============================================================
 
+    const STORAGE_KEY = 'wilson_sons_report_draft';
+
+    // 1. Função para SALVAR o estado atual
+    function saveToLocal() {
+        const sections = document.querySelectorAll('.report-section');
+        const dataToSave = [];
+
+        sections.forEach(section => {
+            const type = section.dataset.type;
+            const subtype = section.querySelector('.inp-subtype')?.value || "";
+            
+            // Coleta dados dos inputs de texto básicos
+            const sectionData = {
+                type: type,
+                subtype: subtype,
+                values: {
+                    cliente: section.querySelector('.inp-cliente')?.value || "",
+                    data: section.querySelector('.inp-data')?.value || "",
+                    container: section.querySelector('.inp-container')?.value || "",
+                    bl: section.querySelector('.inp-bl')?.value || "",
+                    lacre: section.querySelector('.inp-lacre')?.value || "",
+                    cpf: section.querySelector('.inp-cpf')?.value || "",
+                    obs: section.querySelector('.inp-obs')?.value || "",
+                    avaria: section.querySelector('.inp-avaria')?.value || "",
+                    acomp: section.querySelector('.inp-acomp')?.value || "",
+                    servico: section.querySelector('.inp-servico')?.value || "",
+                    qtd: section.querySelector('.inp-qtd')?.value || ""
+                },
+                // Coleta Checkboxes (para Termo de Avaria)
+                checkboxes: [],
+                // Coleta Equipe (Conferente, etc - apenas texto)
+                staff: []
+            };
+
+            // Salva Checkboxes marcados
+            section.querySelectorAll('.checkbox-grid input[type="checkbox"]:checked').forEach(cb => {
+                sectionData.checkboxes.push(cb.value);
+            });
+            // Salva texto do campo "Outro" nas avarias
+            const otherInput = section.querySelector('.inp-other-avaria');
+            if(otherInput) sectionData.values.otherAvaria = otherInput.value;
+
+            // Salva nomes da equipe
+            section.querySelectorAll('.staff-input').forEach(inp => {
+                sectionData.staff.push(inp.value);
+            });
+
+            dataToSave.push(sectionData);
+        });
+
+        // Salva no navegador (Converte Objeto -> Texto JSON)
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+        
+        // (Opcional) Visual feedback no console
+        // console.log("Rascunho salvo automático às " + new Date().toLocaleTimeString());
+    }
+
+    // 2. Função para CARREGAR (RESTAURAR) o estado
+    function restoreFromLocal() {
+        const savedData = localStorage.getItem(STORAGE_KEY);
+        if (!savedData) return; // Nada salvo, não faz nada
+
+        try {
+            const parsedData = JSON.parse(savedData);
+            if (parsedData.length === 0) return;
+
+            // Pergunta ao usuário se ele quer restaurar
+            if (!confirm("Encontrei um relatório não finalizado anteriormente. Deseja recuperar os dados?")) {
+                localStorage.removeItem(STORAGE_KEY); // Se não quiser, limpa
+                return;
+            }
+
+            // 1. Limpa a tela atual e esconde menu inicial
+            document.getElementById("reports-container").innerHTML = "";
+            document.getElementById("mainForm").style.display = "block";
+            document.getElementById("row-tipo-especifico").style.display = "flex"; // Ajuste visual
+
+            // 2. Recria as seções
+            parsedData.forEach(item => {
+                // Reutiliza sua função 'addSection' existente
+                // Nota: Precisamos passar o subtipo correto
+                
+                // Determina qual parametro passar para addSection
+                let addParam = item.type; 
+                if (item.type === 'bagagem' && item.subtype) addParam = item.subtype;
+                if (item.type === 'termo') addParam = 'termo'; // ou 'avaria' dependendo da sua logica
+
+                // Cria a seção visualmente
+                addSection(addParam, false, item.subtype);
+
+                // Pega a seção recém criada (a última adicionada)
+                const sections = document.querySelectorAll('.report-section');
+                const currentSection = sections[sections.length - 1];
+
+                if (currentSection) {
+                    // Preenche Inputs de Texto
+                    for (const [key, value] of Object.entries(item.values)) {
+                        const input = currentSection.querySelector(`.inp-${key}`);
+                        if (input) input.value = value;
+                    }
+                    // Preenche "Outro" avaria
+                    if(item.values.otherAvaria) {
+                        const otherInp = currentSection.querySelector('.inp-other-avaria');
+                        if(otherInp) otherInp.value = item.values.otherAvaria;
+                    }
+
+                    // Restaura Checkboxes
+                    if (item.checkboxes && item.checkboxes.length > 0) {
+                        item.checkboxes.forEach(val => {
+                            const cb = currentSection.querySelector(`input[type="checkbox"][value="${val}"]`);
+                            if (cb) cb.checked = true;
+                            // Ativa o input "outro" se necessário
+                            if (val === "OUTRO") toggleOtherAvaria(cb);
+                        });
+                    }
+
+                    // Restaura Equipe (Staff)
+                    // Nota: Sua lógica cria inputs dinamicamente, aqui vamos tentar preencher os existentes
+                    // ou criar novos se necessário. Para simplificar, vamos preencher os vazios.
+                    const staffInputs = currentSection.querySelectorAll('.staff-input');
+                    item.staff.forEach((name, index) => {
+                        // Se existir input, preenche. Se não (ex: adicionou + gente), teria que criar.
+                        // Simplificação: preenche os slots padrão disponíveis.
+                        if (staffInputs[index]) staffInputs[index].value = name;
+                    });
+                }
+            });
+
+        } catch (e) {
+            console.error("Erro ao restaurar backup:", e);
+        }
+    }
+
+    // 3. ATIVADORES (Triggers)
+    
+    // Salva sempre que o usuário digitar algo ou clicar
+    document.addEventListener('input', saveToLocal);
+    document.addEventListener('change', saveToLocal);
+
+    // Tenta restaurar ao abrir a página
+    window.addEventListener('DOMContentLoaded', () => {
+        // Pequeno delay para garantir que o HTML carregou
+        setTimeout(restoreFromLocal, 500);
+    });
+
+    // Limpa o storage APÓS gerar o PDF com sucesso (Opcional, mas recomendado)
+    // Você deve adicionar 'localStorage.removeItem(STORAGE_KEY);' dentro do 'finally' da sua função generateAllPDFs
 
     </script>
 
