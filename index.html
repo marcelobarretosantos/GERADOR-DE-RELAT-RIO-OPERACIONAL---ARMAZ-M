@@ -2855,100 +2855,145 @@
 
 
 
-        function addPhotoSlotToGrid(grid) {
+       function addPhotoSlotToGrid(grid) {
+    const count = grid.children.length + 1;
+    const slot = document.createElement('div');
+    slot.className = 'photo-slot';
+    // O tabindex permite que a DIV receba foco para o CTRL+V funcionar nela
+    slot.setAttribute('tabindex', '0'); 
 
-            const count = grid.children.length + 1;
+    slot.innerHTML = `
+        <div class="placeholder">
+            <span>📷</span><br>Foto ${count}<br>
+            <small>2x Clique: Arquivo<br>Arraste ou Ctrl+V</small>
+        </div>
+        <input 
+            type="file" 
+            id="uploadImagens-${Date.now()}" 
+            multiple 
+            accept="image/*" 
+            style="display:none;" 
+            onchange="handleFileSelect(this)"
+        >
+        <img src="" style="display:none;">
+        <button type="button" class="edit-icon-btn" onclick="editImageFromSlot(this, event)">✏️ Editar</button>
+        <button type="button" class="delete-icon-btn" onclick="deleteImageFromSlot(this, event)">🗑️</button>
+    `;
 
-            const slot = document.createElement('div');
+    const fileInput = slot.querySelector('input[type="file"]');
 
-            slot.className = 'photo-slot';
+    // 1. Focar no slot ao clicar (para habilitar o Ctrl+V)
+    slot.addEventListener('click', function(e) { 
+        this.focus(); 
+        // Adiciona um estilo visual leve para saber que está focado
+        this.style.borderColor = 'var(--ws-cyan)';
+    });
+    
+    // Remove o estilo de foco ao sair
+    slot.addEventListener('blur', function(e) {
+        this.style.borderColor = '#ccc';
+    });
 
-            slot.setAttribute('tabindex', '0');
+    // 2. Duplo clique abre seleção de arquivo
+    slot.addEventListener('dblclick', function(e) { 
+        fileInput.click(); 
+    });
 
+    // 3. Eventos de Drag & Drop
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        slot.addEventListener(eventName, e => { 
+            e.preventDefault(); 
+            e.stopPropagation(); 
+        }, false);
+    });
 
-
-            
-
-            slot.innerHTML = `
-
-                <div class="placeholder"><span>📷</span><br>Foto ${count}<br><small>2x Clique: Arquivo<br>Ctrl+V: Colar</small></div>
-
-     <input 
-    type="file" 
-    id="uploadImagens" 
-    multiple 
-    accept="image/*" 
-    style="display:none;" 
-    onchange="handleFileSelect(this)"
->
-
-                <img src="">
-
-                <button type="button" class="edit-icon-btn" onclick="editImageFromSlot(this, event)">✏️ Editar</button>
-
-                <button type="button" class="delete-icon-btn" onclick="deleteImageFromSlot(this, event)">🗑️</button>
-
-            `;
-
-            
-
-            const fileInput = slot.querySelector('input[type="file"]');
-
-
-
-            slot.addEventListener('click', function(e) { this.focus(); });
-
-            slot.addEventListener('dblclick', function(e) { fileInput.click(); });
-
-
-
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-
-                slot.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false);
-
-            });
-
-
-
-            slot.addEventListener('drop', function(e) {
-
-                const files = e.dataTransfer.files;
-
-                if (files.length > 0) processFile(files[0], slot);
-
-            }, false);
-
-
-
-            slot.addEventListener('paste', function(e) {
-
-                const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-
-                for (let index in items) {
-
-                    const item = items[index];
-
-                    if (item.kind === 'file' && item.type.includes('image/')) {
-
-                        const blob = item.getAsFile();
-
-                        processFile(blob, slot);
-
-                        e.preventDefault();
-
-                        break;
-
-                    }
-
-                }
-
-            });
-
-
-
-            grid.appendChild(slot);
-
+    // Efeito visual ao arrastar por cima
+    slot.addEventListener('dragover', () => slot.classList.add('drag-active'), false);
+    slot.addEventListener('dragleave', () => slot.classList.remove('drag-active'), false);
+    slot.addEventListener('drop', (e) => {
+        slot.classList.remove('drag-active');
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files && files.length > 0) {
+            distributeFilesToSlots(files, slot);
         }
+    }, false);
+
+    // 4. Evento de Colar (Ctrl+V) específico neste slot
+    slot.addEventListener('paste', (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // Impede que o paste global (do modal) dispare
+        
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        const files = [];
+        
+        for (let index in items) {
+            const item = items[index];
+            if (item.kind === 'file' && item.type.includes('image/')) {
+                files.push(item.getAsFile());
+            }
+        }
+        
+        if (files.length > 0) {
+            distributeFilesToSlots(files, slot);
+        }
+    });
+
+    grid.appendChild(slot);
+}
+
+function distributeFilesToSlots(fileList, startSlot) {
+    const container = startSlot.parentElement;
+    
+    // Converte a lista de arquivos para Array para facilitar
+    const filesArray = Array.from(fileList);
+    
+    // Pega todos os slots atuais
+    let currentSlots = Array.from(container.children);
+    let startIndex = currentSlots.indexOf(startSlot);
+
+    filesArray.forEach((file, i) => {
+        // Calcula o índice do slot alvo
+        let targetIndex = startIndex + i;
+
+        // Se o slot não existe (ex: colou 5 fotos, mas só tinha 1 espaço), cria novos
+        if (targetIndex >= currentSlots.length) {
+            // Usa sua função existente de criar slots limpos
+            criarNovoSlot(container); 
+            // Atualiza a lista de slots
+            currentSlots = Array.from(container.children);
+        }
+
+        const targetSlot = currentSlots[targetIndex];
+        
+        // Renderiza a imagem no slot
+        previewImageInSlot(file, targetSlot);
+    });
+}
+function previewImageInSlot(file, slot) {
+    const img = slot.querySelector('img');
+    const placeholder = slot.querySelector('.placeholder');
+    const btnEdit = slot.querySelector('.edit-icon-btn');
+    const btnDel = slot.querySelector('.delete-icon-btn');
+    
+    // Lê o arquivo como Base64
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        img.src = e.target.result;
+        img.style.display = 'block';
+        
+        // Atualiza classes e visibilidade
+        slot.classList.add('has-image');
+        if(placeholder) placeholder.style.display = 'none';
+        if(btnEdit) btnEdit.style.display = 'block';
+        if(btnDel) btnDel.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+
+    // Opcional: Anexar o arquivo ao input hidden (fileInput) do slot
+    // Isso é complexo com DataTransfer em alguns browsers antigos, 
+    // mas para visualização e PDF (Base64) o código acima já basta.
+}
 
         // --- NOVA FUNÇÃO PARA DELETAR IMAGEM DA GRADE ---
 
