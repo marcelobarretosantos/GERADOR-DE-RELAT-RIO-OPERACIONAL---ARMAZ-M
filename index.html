@@ -3762,32 +3762,29 @@
 
             // -----------------------------------------------------------
 
+           // 2. Nome do Arquivo
             let finalFileName = "Relatorio.pdf";
-
             const firstSection = document.querySelector('.report-section');
-
             
-
             if (firstSection) {
-
+                const tipo = firstSection.dataset.type; // Pega o tipo principal (bagagem ou termo)
                 const nomeCliente = firstSection.querySelector('.inp-cliente').value.toUpperCase().trim() || "CLIENTE";
-
                 const numContainer = firstSection.querySelector('.inp-container').value.toUpperCase().trim() || "CONTAINER";
-
                 const numBL = firstSection.querySelector('.inp-bl').value.toUpperCase().trim() || "BL";
-
-
-
-                // Remove caracteres inválidos para nome de arquivo
-
-                const safeCliente = nomeCliente.replace(/[<>:"/\\|?*]/g, '');
-
                 
-
-                finalFileName = `${safeCliente} - ${numContainer} - ${numBL}.pdf`;
-
+                // Remove caracteres inválidos para nome de arquivo
+                const safeCliente = nomeCliente.replace(/[<>:"/\\|?*]/g, '');
+                
+                let prefixo = "Relatório";
+                
+                if (tipo === 'bagagem') {
+                    prefixo = "Relatório de Bagagem";
+                } else if (tipo === 'termo') {
+                    prefixo = "TFA";
+                }
+                
+                finalFileName = `${prefixo} - ${safeCliente} - ${numBL} - ${numContainer}.pdf`;
             }
-
 
 
             // -----------------------------------------------------------
