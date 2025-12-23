@@ -39,6 +39,28 @@
 
     <style>
 
+        /* Cursor de movimento para o slot */
+.photo-slot {
+    cursor: grab; /* Mão aberta */
+}
+
+.photo-slot:active {
+    cursor: grabbing; /* Mão fechada ao segurar */
+}
+
+/* Estilo visual enquanto arrasta o quadrado */
+.photo-slot.sortable-dragging {
+    opacity: 0.4;
+    border: 2px dashed #333;
+    background: #e0e0e0;
+}
+
+/* Estilo quando passa um quadrado por cima de outro (alvo) */
+.photo-slot.sortable-over {
+    border-left: 4px solid var(--ws-cyan); /* Indicador visual de onde vai cair */
+    transform: scale(1.02);
+}
+
         /* Botão X (Remover Slot inteiro) */
 .remove-icon-btn {
     position: absolute;
@@ -1678,6 +1700,9 @@
 
     <script>
 
+        // --- VARIÁVEL PARA REORDENAÇÃO ---
+let dragSrcEl = null; // Guarda o elemento que está sendo arrastado
+
         // --- FUNÇÃO GLOBAL DE COLAR (CTRL+V) ---
 
         // Esta função gerencia onde a imagem será colada
@@ -2885,16 +2910,19 @@
 
 
 
-    function addPhotoSlotToGrid(grid) {
+   function addPhotoSlotToGrid(grid) {
     const count = grid.children.length + 1;
     const slot = document.createElement('div');
     slot.className = 'photo-slot';
     slot.setAttribute('tabindex', '0');
+    
+    // 1. Habilita o arraste do elemento
+    slot.setAttribute('draggable', 'true');
 
     slot.innerHTML = `
         <div class="placeholder">
             <span>📷</span><br>Foto ${count}<br>
-            <small>2x Clique: Arquivo<br>Arraste ou Ctrl+V</small>
+            <small>2x Clique: Arquivo<br>Arraste, Cole ou Mova</small>
         </div>
         
         <input 
@@ -2909,47 +2937,100 @@
         <img src="" style="display:none;">
         
         <button type="button" class="remove-icon-btn" onclick="removeSlotFromGrid(this, event)" title="Remover este espaço">✖</button>
-        
         <button type="button" class="delete-icon-btn" onclick="deleteImageFromSlot(this, event)" title="Limpar imagem">🗑️</button>
-        
         <button type="button" class="edit-icon-btn" onclick="editImageFromSlot(this, event)">✏️ Editar</button>
     `;
 
     const fileInput = slot.querySelector('input[type="file"]');
 
-    // --- EVENTOS (Mantidos iguais ao anterior) ---
-    slot.addEventListener('click', function(e) { 
-        this.focus(); 
-        this.style.borderColor = 'var(--ws-cyan)';
-    });
-    
-    slot.addEventListener('blur', function(e) {
-        this.style.borderColor = '#ccc';
+    // --- EVENTOS DE INTERAÇÃO BÁSICA ---
+    slot.addEventListener('click', function(e) { this.focus(); this.style.borderColor = 'var(--ws-cyan)'; });
+    slot.addEventListener('blur', function(e) { this.style.borderColor = '#ccc'; });
+    slot.addEventListener('dblclick', function(e) { fileInput.click(); });
+
+    // --- EVENTOS DE REORDENAÇÃO (SORTABLE) ---
+
+    // A. Começou a arrastar o quadrado
+    slot.addEventListener('dragstart', function(e) {
+        dragSrcEl = this;
+        e.dataTransfer.effectAllowed = 'move';
+        // Define o conteúdo para garantir compatibilidade (Firefox precisa disso)
+        e.dataTransfer.setData('text/html', this.innerHTML);
+        this.classList.add('sortable-dragging');
     });
 
-    slot.addEventListener('dblclick', function(e) { 
-        fileInput.click(); 
+    // B. Arrastando por cima de outro
+    slot.addEventListener('dragover', function(e) {
+        if (e.preventDefault) e.preventDefault(); // Necessário para permitir o Drop
+        e.dataTransfer.dropEffect = 'move';
+        return false;
     });
 
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        slot.addEventListener(eventName, e => { 
-            e.preventDefault(); 
-            e.stopPropagation(); 
-        }, false);
+    // C. Entrou na área de outro quadrado (Visual)
+    slot.addEventListener('dragenter', function(e) {
+        // Só adiciona efeito visual se estiver movendo um quadrado, não um arquivo
+        if (dragSrcEl) this.classList.add('sortable-over');
     });
 
-    slot.addEventListener('dragover', () => slot.classList.add('drag-active'), false);
-    slot.addEventListener('dragleave', () => slot.classList.remove('drag-active'), false);
-    
-    slot.addEventListener('drop', (e) => {
-        slot.classList.remove('drag-active');
-        const dt = e.dataTransfer;
-        const files = dt.files;
-        if (files && files.length > 0) {
-            distributeFilesToSlots(files, slot);
+    // D. Saiu da área (Remove visual)
+    slot.addEventListener('dragleave', function(e) {
+        this.classList.remove('sortable-over');
+        this.classList.remove('drag-active'); // Remove também o visual de arquivo se houver
+    });
+
+    // E. Terminou o arrasto (Limpeza)
+    slot.addEventListener('dragend', function(e) {
+        this.classList.remove('sortable-dragging');
+        // Remove classes visuais de todos os slots da grade
+        grid.querySelectorAll('.photo-slot').forEach(item => {
+            item.classList.remove('sortable-over');
+            item.classList.remove('drag-active');
+        });
+        dragSrcEl = null; // Reseta a variável
+    });
+
+    // --- EVENTO DROP UNIFICADO (Arquivos + Reordenação) ---
+    slot.addEventListener('drop', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        
+        // Limpa estilos visuais
+        this.classList.remove('sortable-over');
+        this.classList.remove('drag-active');
+
+        // CENÁRIO 1: O usuário soltou ARQUIVOS (Imagens do PC)
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            distributeFilesToSlots(e.dataTransfer.files, this);
+            return false;
         }
-    }, false);
 
+        // CENÁRIO 2: O usuário soltou um QUADRANTE (Reordenação)
+        if (dragSrcEl && dragSrcEl !== this) {
+            // Lógica de troca de posição no DOM
+            // Insere o elemento arrastado ANTES do elemento onde soltou
+            // (Para trocar "depois", a lógica seria um pouco mais complexa, mas "antes" é o padrão intuitivo)
+            
+            // Verifica a ordem para decidir se insere antes ou depois (melhor UX)
+            const allSlots = Array.from(grid.children);
+            const srcIndex = allSlots.indexOf(dragSrcEl);
+            const targetIndex = allSlots.indexOf(this);
+
+            if (srcIndex < targetIndex) {
+                // Se arrastou de cima para baixo, insere DEPOIS do alvo
+                this.parentNode.insertBefore(dragSrcEl, this.nextSibling);
+            } else {
+                // Se arrastou de baixo para cima, insere ANTES do alvo
+                this.parentNode.insertBefore(dragSrcEl, this);
+            }
+
+            // Atualiza a numeração (Foto 1, Foto 2...)
+            updatePhotoNumbers(grid);
+        }
+
+        return false;
+    });
+
+    // --- PASTE (Mantido) ---
     slot.addEventListener('paste', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -2961,9 +3042,7 @@
                 files.push(item.getAsFile());
             }
         }
-        if (files.length > 0) {
-            distributeFilesToSlots(files, slot);
-        }
+        if (files.length > 0) distributeFilesToSlots(files, slot);
     });
 
     grid.appendChild(slot);
