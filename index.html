@@ -1042,6 +1042,24 @@
         background: var(--ws-cyan);
         box-shadow: 0 0 5px rgba(0,0,0,0.5);
     }
+} 
+    .editor-canvas-container { 
+    flex: 1; 
+    overflow: hidden; /* Removemos 'auto' para evitar rolagem dupla */
+    border: 1px solid #ccc; 
+    margin: 15px 0; 
+    background: #f0f0f0; 
+    position: relative; 
+    display: flex; 
+    justify-content: center; /* Centraliza Horizontalmente */
+    align-items: center;     /* Centraliza Verticalmente */
+}
+
+/* Garante que o canvas nunca ultrapasse o container visualmente */
+#editorCanvas {
+    max-width: 100%;
+    max-height: 100%;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Sombra para destacar a folha */
 }
 
         </style>
@@ -2954,59 +2972,63 @@
 
 
 
-        function openEditor(fileBlob, slotElement) {
+     function openEditor(fileBlob, slotElement) {
+        currentEditorSlot = slotElement;
+        const modal = document.getElementById('imageEditorModal');
+        const container = modal.querySelector('.editor-canvas-container');
+        
+        // 1. Mostra o modal antes de calcular (importante para ler a largura correta)
+        modal.style.display = 'flex'; 
 
-            currentEditorSlot = slotElement;
+        canvas = document.getElementById('editorCanvas');
+        ctx = canvas.getContext('2d');
+        
+        canvasHistory = [];
+        setColor('red');
+        setTool('pen');
+        
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            imgObj = new Image(); 
+            imgObj.onload = function() {
+                // --- LÓGICA DE AJUSTE DE TAMANHO (FIT TO SCREEN) ---
+                
+                // Pega o espaço disponível na área cinza
+                // Descontamos um pouco (padding) para não ficar colado na borda
+                const availableWidth = container.clientWidth - 20; 
+                const availableHeight = container.clientHeight - 20;
 
-            const modal = document.getElementById('imageEditorModal');
+                let newWidth = imgObj.width;
+                let newHeight = imgObj.height;
 
-            const container = modal.querySelector('.editor-canvas-container');
+                // Calcula a proporção para caber
+                const scale = Math.min(
+                    availableWidth / newWidth, 
+                    availableHeight / newHeight
+                );
 
-            
-
-            canvas = document.getElementById('editorCanvas');
-
-            ctx = canvas.getContext('2d');
-
-            
-
-            canvasHistory = [];
-
-            setColor('red');
-
-            setTool('pen');
-
-            
-
-            const reader = new FileReader();
-
-            reader.onload = function(event) {
-
-                imgObj = new Image(); 
-
-                imgObj.onload = function() {
-
-                    canvas.width = imgObj.width;
-
-                    canvas.height = imgObj.height;
-
-                    ctx.drawImage(imgObj, 0, 0);
-
-                    saveState(); 
-
-                    modal.style.display = 'flex'; 
-
-                    initCanvasEvents(); 
-
+                // Se a imagem for maior que o espaço, reduzimos ela
+                // (Se for menor, mantemos o tamanho original ou aumentamos se quiser, aqui optei por manter a qualidade visual)
+                if (scale < 1) {
+                    newWidth = newWidth * scale;
+                    newHeight = newHeight * scale;
                 }
 
-                imgObj.src = event.target.result;
+                // Define o tamanho do Canvas
+                canvas.width = newWidth;
+                canvas.height = newHeight;
 
+                // Desenha a imagem redimensionada
+                ctx.drawImage(imgObj, 0, 0, newWidth, newHeight);
+                
+                // Salva estado inicial e inicia eventos
+                saveState(); 
+                initCanvasEvents(); 
             }
-
-            reader.readAsDataURL(fileBlob);
-
+            imgObj.src = event.target.result;
         }
+        reader.readAsDataURL(fileBlob);
+    }
 
 
 
