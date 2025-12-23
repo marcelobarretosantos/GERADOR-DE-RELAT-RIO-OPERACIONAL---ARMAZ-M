@@ -39,6 +39,36 @@
 
     <style>
 
+        /* Botão X (Remover Slot inteiro) */
+.remove-icon-btn {
+    position: absolute;
+    top: 5px;
+    left: 5px; /* Fica no canto extremo esquerdo */
+    z-index: 15;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #666; 
+    border-radius: 4px;
+    padding: 4px 8px; /* Mesmo tamanho da lixeira */
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s;
+    line-height: 1;
+    display: block; /* Sempre visível para poder excluir slots vazios */
+}
+
+.remove-icon-btn:hover {
+    background: #333;
+    color: white;
+}
+
+/* Ajuste da Lixeira (Mover para a direita do X) */
+.delete-icon-btn {
+    /* Mudamos de left: 5px para 45px para dar espaço ao X */
+    left: 45px !important; 
+}
+
 
 
         /* Botão Fechar Modal no Topo */
@@ -2855,18 +2885,18 @@
 
 
 
-       function addPhotoSlotToGrid(grid) {
+    function addPhotoSlotToGrid(grid) {
     const count = grid.children.length + 1;
     const slot = document.createElement('div');
     slot.className = 'photo-slot';
-    // O tabindex permite que a DIV receba foco para o CTRL+V funcionar nela
-    slot.setAttribute('tabindex', '0'); 
+    slot.setAttribute('tabindex', '0');
 
     slot.innerHTML = `
         <div class="placeholder">
             <span>📷</span><br>Foto ${count}<br>
             <small>2x Clique: Arquivo<br>Arraste ou Ctrl+V</small>
         </div>
+        
         <input 
             type="file" 
             id="uploadImagens-${Date.now()}" 
@@ -2875,31 +2905,32 @@
             style="display:none;" 
             onchange="handleFileSelect(this)"
         >
+        
         <img src="" style="display:none;">
+        
+        <button type="button" class="remove-icon-btn" onclick="removeSlotFromGrid(this, event)" title="Remover este espaço">✖</button>
+        
+        <button type="button" class="delete-icon-btn" onclick="deleteImageFromSlot(this, event)" title="Limpar imagem">🗑️</button>
+        
         <button type="button" class="edit-icon-btn" onclick="editImageFromSlot(this, event)">✏️ Editar</button>
-        <button type="button" class="delete-icon-btn" onclick="deleteImageFromSlot(this, event)">🗑️</button>
     `;
 
     const fileInput = slot.querySelector('input[type="file"]');
 
-    // 1. Focar no slot ao clicar (para habilitar o Ctrl+V)
+    // --- EVENTOS (Mantidos iguais ao anterior) ---
     slot.addEventListener('click', function(e) { 
         this.focus(); 
-        // Adiciona um estilo visual leve para saber que está focado
         this.style.borderColor = 'var(--ws-cyan)';
     });
     
-    // Remove o estilo de foco ao sair
     slot.addEventListener('blur', function(e) {
         this.style.borderColor = '#ccc';
     });
 
-    // 2. Duplo clique abre seleção de arquivo
     slot.addEventListener('dblclick', function(e) { 
         fileInput.click(); 
     });
 
-    // 3. Eventos de Drag & Drop
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         slot.addEventListener(eventName, e => { 
             e.preventDefault(); 
@@ -2907,9 +2938,9 @@
         }, false);
     });
 
-    // Efeito visual ao arrastar por cima
     slot.addEventListener('dragover', () => slot.classList.add('drag-active'), false);
     slot.addEventListener('dragleave', () => slot.classList.remove('drag-active'), false);
+    
     slot.addEventListener('drop', (e) => {
         slot.classList.remove('drag-active');
         const dt = e.dataTransfer;
@@ -2919,21 +2950,17 @@
         }
     }, false);
 
-    // 4. Evento de Colar (Ctrl+V) específico neste slot
     slot.addEventListener('paste', (e) => {
         e.preventDefault();
-        e.stopPropagation(); // Impede que o paste global (do modal) dispare
-        
+        e.stopPropagation();
         const items = (e.clipboardData || e.originalEvent.clipboardData).items;
         const files = [];
-        
         for (let index in items) {
             const item = items[index];
             if (item.kind === 'file' && item.type.includes('image/')) {
                 files.push(item.getAsFile());
             }
         }
-        
         if (files.length > 0) {
             distributeFilesToSlots(files, slot);
         }
@@ -2969,6 +2996,7 @@ function distributeFilesToSlots(fileList, startSlot) {
         // Renderiza a imagem no slot
         previewImageInSlot(file, targetSlot);
     });
+   
 }
 function previewImageInSlot(file, slot) {
     const img = slot.querySelector('img');
@@ -2993,6 +3021,22 @@ function previewImageInSlot(file, slot) {
     // Opcional: Anexar o arquivo ao input hidden (fileInput) do slot
     // Isso é complexo com DataTransfer em alguns browsers antigos, 
     // mas para visualização e PDF (Base64) o código acima já basta.
+}
+
+ function removeSlotFromGrid(btn, e) {
+    e.stopPropagation(); // Impede que o clique ative o foco ou upload do slot
+    
+    // Confirmação opcional (pode remover se quiser que seja instantâneo)
+    // if (!confirm("Deseja remover este espaço de foto?")) return;
+
+    const slot = btn.parentElement;
+    
+    // Remove o elemento do DOM
+    slot.remove();
+    
+    // Opcional: Renumerar os placeholders restantes (visual)
+    // Se quiser que os números "Foto 1, Foto 2" se ajustem automaticamente:
+    // updatePhotoNumbers(); 
 }
 
         // --- NOVA FUNÇÃO PARA DELETAR IMAGEM DA GRADE ---
