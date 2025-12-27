@@ -4704,6 +4704,24 @@ section.querySelectorAll('.photo-grid .photo-slot').forEach(slot => {
 
     // Limpa o storage APÓS gerar o PDF com sucesso (Opcional, mas recomendado)
     // Você deve adicionar 'localStorage.removeItem(STORAGE_KEY);' dentro do 'finally' da sua função generateAllPDFs
+    // Função para habilitar/desabilitar o campo "Outro" nas avarias
+function toggleOtherAvaria(checkbox) {
+    // Procura o campo de texto 'inp-other-avaria' que está dentro da mesma div
+    const textInput = checkbox.parentNode.querySelector('.inp-other-avaria');
+    
+    if (textInput) {
+        // Se o checkbox estiver marcado, habilita o campo. Se não, desabilita.
+        textInput.disabled = !checkbox.checked;
+        
+        // Se desmarcar, limpa o texto que estava escrito
+        if (!checkbox.checked) {
+            textInput.value = ''; 
+        } else {
+            // Se marcar, já coloca o foco para digitar
+            textInput.focus();
+        }
+    }
+}
     
     
 
