@@ -1657,7 +1657,7 @@
 
                     <select class="inp-servico">
                         
-                         <option value="-----">-----</option>
+                         <option value="Selecione">"Selecione"</option>
 
                         <option value="DESOVA TOTAL">DESOVA TOTAL</option>
 
@@ -2929,7 +2929,7 @@ let dragSrcEl = null; // Guarda o elemento que está sendo arrastado
                 if (!qtdInp.value.trim()) markError(qtdInp, "Qtd Avarias é obrigatória");
                 // Validação do Campo Serviço
             const servicoInp = section.querySelector('.inp-servico');
-            if (servicoInp && servicoInp.value === "-----") {
+            if (servicoInp && servicoInp.value === "Selecione") {
                 markError(servicoInp, "O campo Serviço é obrigatório");
             }
                 
