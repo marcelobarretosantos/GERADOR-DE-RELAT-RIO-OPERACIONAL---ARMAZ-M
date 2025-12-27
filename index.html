@@ -1656,6 +1656,8 @@
                     <label>Serviço:</label>
 
                     <select class="inp-servico">
+                        
+                         <option value="-----">-----</option>
 
                         <option value="DESOVA TOTAL">DESOVA TOTAL</option>
 
@@ -1663,13 +1665,14 @@
 
                         <option value="CROSSDOCKING">CROSSDOCKING</option>
 
-                        <option value="DESOVA PARA RFB">DESOVA PARA RFB</option>
-
                         <option value="TRANSFERÊNCIA DE CONTAINER">TRANSFERÊNCIA DE CONTAINER</option>
 
                         <option value="VISTORIA MAPA">VISTORIA MAPA</option>
 
+                        <option value="VISTORIA RFB">VISTORIA RFB</option>
+
                         <option value="CARREGAMENTO">CARREGAMENTO</option>
+                        
 
                     </select>
 
@@ -2924,6 +2927,11 @@ let dragSrcEl = null; // Guarda o elemento que está sendo arrastado
             if (type === 'termo') {
                 const qtdInp = section.querySelector('.inp-qtd');
                 if (!qtdInp.value.trim()) markError(qtdInp, "Qtd Avarias é obrigatória");
+                // Validação do Campo Serviço
+            const servicoInp = section.querySelector('.inp-servico');
+            if (servicoInp && servicoInp.value === "-----") {
+                markError(servicoInp, "O campo Serviço é obrigatório");
+            }
                 
                 // Verifica se pelo menos um checkbox foi marcado
                 const checkboxes = section.querySelectorAll('.checkbox-grid input[type="checkbox"]:checked');
@@ -2968,6 +2976,8 @@ let dragSrcEl = null; // Guarda o elemento que está sendo arrastado
 
         return errors;
     }
+
+
 
     // --- FUNÇÃO AUXILIAR: VALIDAÇÃO DE DATA ---
     // Retorna 'true' se válido, ou uma 'string' com a mensagem de erro
