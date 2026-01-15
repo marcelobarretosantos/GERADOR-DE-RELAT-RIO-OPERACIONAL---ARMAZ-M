@@ -19,22 +19,11 @@
 
         <title>Gerador de Relatórios - Wilson Sons</title>
 
-
-
-    
-
-
-
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 
 
         <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-
-
-
-    
-
 
 
     <style>
@@ -2448,253 +2437,145 @@ let dragSrcEl = null; // Guarda o elemento que está sendo arrastado
 
 
 
-        function addSection(type, isFirst = false, termoSubtype = "") {
-
-            const container = document.getElementById("reports-container");
-
-            let templateId = "";
-
-            let subtype = "";
-
-            
-
-            // Define qual template usar e qual o subtipo
-
-            if (type === "desova" || type === "ovacao" || type === "bagagem_avaria") {
-
-                templateId = "tpl-bagagem";
-
-                subtype = type;
-
-            } else if (type === "avaria" || type === "termo") {
-
-                templateId = "tpl-termo";
-
-                subtype = termoSubtype || type; 
-
-            }
-
-
-
-            // --- NOVA LÓGICA DE BLOQUEIO (Desova E Ovação) ---
-
-            // Se estiver tentando adicionar 'desova' ou 'ovacao' e não for a primeira vez (inicialização)
-
-            if (!isFirst) {
-
-                if (subtype === 'desova' && hasSectionByType('desova')) {
-
-                    alert("Atenção: Já existe um formulário de DESOVA. Não é permitido adicionar outro.");
-
-                    return; 
-
-                }
-
-                if (subtype === 'ovacao' && hasSectionByType('ovacao')) {
-
-                    alert("Atenção: Já existe um formulário de OVAÇÃO. Não é permitido adicionar outro.");
-
-                    return; 
-
-                }
-
-            }
-
-            // -------------------------------
-
-
-
-            const clone = document.getElementById(templateId).content.cloneNode(true);
-
-            const section = clone.querySelector('.report-section');
-
-
-
-            // --- APLICAR MÁSCARAS E REGRAS ---
-
-            if (typeof setupInputMasks === "function") {
-
-                setupInputMasks(section);
-
-            }
-
-
-
-            if (!isFirst) {
-
-                const previousSection = container.querySelector('.report-section:last-child');
-
-                if (previousSection) {
-
-                    // Copia campos padrão
-
-                    const campos = ['cliente', 'container', 'bl', 'data'];
-
-                    campos.forEach(campo => {
-
-                        const prevInput = previousSection.querySelector(`.inp-${campo}`);
-
-                        const currentInput = section.querySelector(`.inp-${campo}`);
-
-                        if (prevInput && currentInput) {
-
-                            currentInput.value = prevInput.value;
-
-                        }
-
-                    });
-
-                    
-
-                    // Lógica Específica de Cópia
-
-                    if (subtype === "bagagem_avaria") {
-
-                        const dataInput = section.querySelector('.inp-data');
-
-                        if (dataInput) dataInput.readOnly = true;
-
-                    }
-
-
-
-                    // Cópia do CPF para Ovação
-
-                    if (subtype === "ovacao") {
-
-                        const dataInput = section.querySelector('.inp-data');
-
-                        if (dataInput) dataInput.value = ""; 
-
-                        
-
-                        const prevCpf = previousSection.querySelector('.inp-cpf');
-
-                        const currentCpf = section.querySelector('.inp-cpf');
-
-                        
-
-                        if (prevCpf && currentCpf) {
-
-                            currentCpf.value = prevCpf.value;
-
-                        }
-
-                    }
-
-                }
-
-            } else {
-
-                const closeBtn = section.querySelector('.section-close-btn');
-
-                if(closeBtn) closeBtn.style.display = "none";
-
-            }
-
-
-
-            // Configuração dos textos baseados no subtipo
-
-            if (subtype === "desova") {
-
-                section.querySelector('.section-title').innerText = "1. RELATÓRIO DE DESOVA";
-
-                section.querySelector('.lbl-lacre').innerText = "Lacre de Origem:";
-
-                section.querySelector('.inp-obs').value = "Realizada a desova da bagagem para conferência física com a Receita Federal do Brasil.";
-
-                section.querySelector('.inp-subtype').value = "desova";
-
-
-
-            } else if (subtype === "ovacao") {
-
-                section.querySelector('.section-title').innerText = "RELATÓRIO DE OVAÇÃO";
-
-                section.querySelector('.lbl-lacre').innerText = "Lacre do Terminal:";
-
-                section.querySelector('.inp-obs').value = "Após conferência física, a carga foi guardada no contêiner.";
-
-                section.querySelector('.inp-subtype').value = "ovacao";
-
-
-
-            } else if (subtype === "bagagem_avaria") {
-
-                section.querySelector('.section-title').innerText = "RELATÓRIO DE AVARIA (BAGAGEM)";
-
-                section.querySelector('.lbl-lacre').innerText = "Lacre:";
-
-                
-
-                // Frase ajustada
-
-                section.querySelector('.inp-obs').value = "Informamos que, durante a desova do container em questão, foi identificada avaria de origem.";
-
-                
-
-                const colCpf = section.querySelector('.col-cpf');
-
-                if(colCpf) colCpf.style.display = "none"; 
-
-                section.querySelector('.inp-subtype').value = "bagagem_avaria";
-
-
-
-            } else {
-
-                // Lógica para Termo de Avaria
-
-                section.querySelector('.section-title').innerText = "TERMO DE AVARIA E/OU FALTA";
-
-                
-
-                if (subtype === "avaria_interna") {
-
-                    section.querySelector('.inp-obs').value = "Informamos que, durante o processo do referido serviço foi ocasionada avaria interna conforme registros fotográficos.";
-
-                } else {
-
-                    section.querySelector('.inp-obs').value = "Informamos que, durante a desova do container em questão, foi identificada avaria de origem.";
-
-                }
-
-            }
-
-
-
-            const photoGrid = section.querySelector('.photo-grid');
-
-            if(photoGrid) {
-
-                for(let i=0; i<4; i++) addPhotoSlotToGrid(photoGrid);
-
-            }
-
-
-
-            if (templateId === "tpl-bagagem") {
-
-                section.querySelectorAll('.container-staff').forEach(div => {
-
-                    const input = document.createElement("input");
-
-                    input.type = "text"; input.className = "staff-input dynamic-input"; input.placeholder = "Nome";
-
-                    div.appendChild(input);
-
-                });
-
-            }
-
-
-
-            container.appendChild(section);
-
-            if (!isFirst) section.scrollIntoView({behavior: 'smooth'});
-
+function addSection(type, isFirst = false, termoSubtype = "") {
+    const container = document.getElementById("reports-container");
+    let templateId = "";
+    let subtype = "";
+
+    // Define qual template usar e qual o subtipo
+    if (type === "desova" || type === "ovacao" || type === "bagagem_avaria") {
+        templateId = "tpl-bagagem";
+        subtype = type;
+    } else if (type === "avaria" || type === "termo") {
+        templateId = "tpl-termo";
+        subtype = termoSubtype || type;
+    }
+
+    // --- LÓGICA DE BLOQUEIO (Desova E Ovação) ---
+    if (!isFirst) {
+        if (subtype === 'desova' && hasSectionByType('desova')) {
+            alert("Atenção: Já existe um formulário de DESOVA. Não é permitido adicionar outro.");
+            return;
         }
+        if (subtype === 'ovacao' && hasSectionByType('ovacao')) {
+            alert("Atenção: Já existe um formulário de OVAÇÃO. Não é permitido adicionar outro.");
+            return;
+        }
+    }
+    // -------------------------------
+
+    const clone = document.getElementById(templateId).content.cloneNode(true);
+    const section = clone.querySelector('.report-section');
+
+    // --- APLICAR MÁSCARAS E REGRAS ---
+    if (typeof setupInputMasks === "function") {
+        setupInputMasks(section);
+    }
+
+    // --- LÓGICA DE PREENCHIMENTO AUTOMÁTICO MELHORADA ---
+    if (!isFirst) {
+        // Função auxiliar para buscar o último valor preenchido em qualquer seção anterior
+        const getLastValue = (className) => {
+            const allInputs = document.querySelectorAll(`.${className}`);
+            // Percorre de trás para frente para achar o último valor não vazio
+            for (let i = allInputs.length - 1; i >= 0; i--) {
+                if (allInputs[i].value.trim() !== "") {
+                    return allInputs[i].value;
+                }
+            }
+            return "";
+        };
+
+        // Copia campos padrão (cliente, container, bl, data)
+        // Agora busca o último valor válido em todo o documento, ignorando seções vazias no meio
+        const campos = ['cliente', 'container', 'bl', 'data'];
+        campos.forEach(campo => {
+            const lastVal = getLastValue(`inp-${campo}`);
+            const currentInput = section.querySelector(`.inp-${campo}`);
+            if (currentInput && lastVal) {
+                currentInput.value = lastVal;
+            }
+        });
+
+        // Lógica Específica para Bagagem Avaria
+        if (subtype === "bagagem_avaria") {
+            const dataInput = section.querySelector('.inp-data');
+            if (dataInput) dataInput.readOnly = true;
+        }
+
+        // Lógica Específica para Ovação (Correção do CPF)
+        if (subtype === "ovacao") {
+            // Limpa a data para ovação, se necessário (conforme seu código original)
+            const dataInput = section.querySelector('.inp-data');
+            if (dataInput) dataInput.value = "";
+
+            // Busca o último CPF válido (pula as seções de avaria que não têm CPF)
+            const lastCpf = getLastValue('inp-cpf');
+            const currentCpf = section.querySelector('.inp-cpf');
+            if (currentCpf && lastCpf) {
+                currentCpf.value = lastCpf;
+            }
+        }
+    } else {
+        // Se for a primeira seção, esconde o botão de fechar
+        const closeBtn = section.querySelector('.section-close-btn');
+        if (closeBtn) closeBtn.style.display = "none";
+    }
+
+    // Configuração dos textos baseados no subtipo
+    if (subtype === "desova") {
+        section.querySelector('.section-title').innerText = "1. RELATÓRIO DE DESOVA";
+        section.querySelector('.lbl-lacre').innerText = "Lacre de Origem:";
+        section.querySelector('.inp-obs').value = "Realizada a desova da bagagem para conferência física com a Receita Federal do Brasil.";
+        section.querySelector('.inp-subtype').value = "desova";
+
+    } else if (subtype === "ovacao") {
+        section.querySelector('.section-title').innerText = "RELATÓRIO DE OVAÇÃO";
+        section.querySelector('.lbl-lacre').innerText = "Lacre do Terminal:";
+        section.querySelector('.inp-obs').value = "Após conferência física, a carga foi guardada no contêiner.";
+        section.querySelector('.inp-subtype').value = "ovacao";
+
+        // Oculta o campo "Houve Avaria?" na tela
+        const colAvaria = section.querySelector('.inp-avaria').closest('.col');
+        if (colAvaria) colAvaria.style.display = 'none';
+
+    } else if (subtype === "bagagem_avaria") {
+        section.querySelector('.section-title').innerText = "RELATÓRIO DE AVARIA (BAGAGEM)";
+        section.querySelector('.lbl-lacre').innerText = "Lacre:";
+        section.querySelector('.inp-obs').value = "Informamos que, durante a desova do container em questão, foi identificada avaria de origem.";
+        
+        const colCpf = section.querySelector('.col-cpf');
+        if (colCpf) colCpf.style.display = "none";
+        section.querySelector('.inp-subtype').value = "bagagem_avaria";
+
+    } else {
+        // Lógica para Termo de Avaria
+        section.querySelector('.section-title').innerText = "TERMO DE AVARIA E/OU FALTA";
+        if (subtype === "avaria_interna") {
+            section.querySelector('.inp-obs').value = "Informamos que, durante o processo do referido serviço foi ocasionada avaria interna conforme registros fotográficos.";
+        } else {
+            section.querySelector('.inp-obs').value = "Informamos que, durante a desova do container em questão, foi identificada avaria de origem.";
+        }
+    }
+
+    const photoGrid = section.querySelector('.photo-grid');
+    if (photoGrid) {
+        for (let i = 0; i < 4; i++) addPhotoSlotToGrid(photoGrid);
+    }
+
+    if (templateId === "tpl-bagagem") {
+        section.querySelectorAll('.container-staff').forEach(div => {
+            const input = document.createElement("input");
+            input.type = "text";
+            input.className = "staff-input dynamic-input";
+            input.placeholder = "Nome";
+            div.appendChild(input);
+        });
+    }
+
+    container.appendChild(section);
+    if (!isFirst) section.scrollIntoView({ behavior: 'smooth' });
+}
 
 
 
@@ -4314,36 +4195,23 @@ section.querySelectorAll('.photo-grid .photo-slot').forEach(slot => {
 
             const cpfRow = (subtype !== 'bagagem_avaria') ? `<tr><td class="label-cell">CPF:</td><td class="value-cell">${cpf}</td></tr>` : "";
 
-
+            // --- ADICIONE ESTA NOVA LINHA (Define se a avaria aparece ou não) ---
+            const avariaRow = (subtype !== 'ovacao') ? `<tr><td class="label-cell">HOUVE AVARIA?</td><td class="value-cell checkbox-pdf">${avaria}</td></tr>` : "";
 
             return `
-
             <table class="master-table">
-
                 <tr>
-
                     <td class="col-left" style="height: 1px;"> 
-
                         <table class="inner-data-table" style="height: 100%;">
-
                             <tr><td class="label-cell">CLIENTE:</td><td class="value-cell">${data.cliente}</td></tr>
-
                             ${cpfRow}
-
                             <tr><td class="label-cell">CONTAINER:</td><td class="value-cell">${data.container}</td></tr>
-
                             <tr><td class="label-cell">MERCADORIA:</td><td class="value-cell">${mercadoria}</td></tr>
-
                             <tr><td class="label-cell">DATA DO SERVIÇO:</td><td class="value-cell">${data.data}</td></tr>
-
                             <tr><td class="label-cell">BL:</td><td class="value-cell">${data.bl}</td></tr>
-
                             <tr><td class="label-cell">${labelLacre}:</td><td class="value-cell">${lacre}</td></tr>
-
-                            <tr><td class="label-cell">HOUVE AVARIA?</td><td class="value-cell checkbox-pdf">${avaria}</td></tr>
-
+                            ${avariaRow}
                             <tr><td class="label-cell">ACOMPANHAMENTO?</td><td class="value-cell checkbox-pdf">${acomp}</td></tr>
-
                         </table>
 
                     </td>
