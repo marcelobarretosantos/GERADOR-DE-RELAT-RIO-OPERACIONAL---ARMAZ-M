@@ -1556,7 +1556,13 @@
 
             </div>
 
-            <div class="row"><div class="col"><label>Observação:</label><textarea class="inp-obs" rows="2"></textarea></div></div>
+<div class="row">
+    <div class="col">
+        <label>Observação:</label>
+        <textarea class="inp-obs" rows="2" maxlength="131"></textarea>
+        <div class="contador-obs" style="font-size: 12px; color: #555; text-align: right; margin-top: 4px; font-weight: bold;">Limite: 131 caracteres</div>
+    </div>
+</div>
 
             <input type="hidden" class="inp-mercadoria" value="BAGAGEM">
 
@@ -1669,7 +1675,13 @@
 
             </div>
 
-            <div class="row"><div class="col"><label>Observação:</label><textarea class="inp-obs" rows="2"></textarea></div></div>
+  <div class="row">
+    <div class="col">
+        <label>Observação:</label>
+        <textarea class="inp-obs" rows="2" maxlength="131"></textarea>
+        <div class="contador-obs" style="font-size: 12px; color: #555; text-align: right; margin-top: 4px; font-weight: bold;">Limite: 131 caracteres</div>
+    </div>
+</div>
 
             <h4>Fotos (Clique ou Arraste)</h4>
 
@@ -1727,28 +1739,60 @@
 
     <script>
 
-    function limparTudo() {
-    // Pega todos os campos de entrada (input) da página e apaga o texto
+function limparTudo() {
+    // 1. Limpa os campos de texto e desmarca as Flags (Checkboxes)
     var inputs = document.querySelectorAll('input');
     
     inputs.forEach(function(campo) {
-        // Não apaga o campo de senha, apenas os do gerador
-        if (campo.type !== 'password' && campo.type !== 'button' && campo.type !== 'submit') {
-            campo.value = '';
+        if (campo.type !== 'password' && campo.type !== 'button' && campo.type !== 'submit' && campo.type !== 'hidden') {
+            if (campo.type === 'checkbox' || campo.type === 'radio') {
+                campo.checked = false; // Tira a marcação visual (Flag)
+            } else {
+                campo.value = ''; // Limpa campos de texto simples
+            }
         }
     });
 
-    // Se houver áreas de texto (textarea), limpa também
-    var textareas = document.querySelectorAll('textarea');
-    textareas.forEach(function(area) {
-        area.value = '';
+    // 2. RESTAURA AS CAIXAS DE SELEÇÃO (Dropdowns - Ex: Campo Serviço)
+    var selects = document.querySelectorAll('select');
+    selects.forEach(function(select) {
+        // Volta a caixa de seleção para a primeira opção (Índice 0 = "Selecione")
+        select.selectedIndex = 0; 
     });
 
-    // Tenta esconder o preview da etiqueta se ele existir
+    // 3. RESTAURA A OBSERVAÇÃO COM BASE NO TIPO DE PROJETO
+    var secoes = document.querySelectorAll('.report-section');
+    secoes.forEach(function(secao) {
+        var textarea = secao.querySelector('.inp-obs');
+        var inputSubtype = secao.querySelector('.inp-subtype');
+        
+        if (textarea && inputSubtype) {
+            var subtype = inputSubtype.value;
+            
+            if (subtype === "avaria_interna") {
+                textarea.value = "Informamos que, durante o processo do referido serviço foi ocasionada avaria interna conforme registros fotográficos.";
+            } else if (subtype === "avaria_origem" || subtype === "termo" || subtype === "bagagem_avaria") {
+                textarea.value = "Informamos que, durante a desova do container em questão, foi identificada avaria de origem.";
+            } else if (subtype === "desova") {
+                textarea.value = "Realizada a desova da bagagem para conferência física com a Receita Federal do Brasil.";
+            } else if (subtype === "ovacao") {
+                textarea.value = "Após conferência física, a carga foi guardada no contêiner.";
+            } else {
+                textarea.value = ""; 
+            }
+        }
+    });
+
+    // 4. Esconde o preview da etiqueta se existir
     var preview = document.getElementById('etiqueta-preview');
     if (preview) {
         preview.style.display = 'none';
         preview.innerHTML = '';
+    }
+
+    // 5. Sincroniza com o sistema de backup para o PDF não puxar dados velhos
+    if (typeof saveToLocal === 'function') {
+        saveToLocal();
     }
 }
 
@@ -4520,6 +4564,8 @@ section.querySelectorAll('.photo-grid .photo-slot').forEach(slot => {
         }
     }
 
+    
+
     // 3. ATIVADORES (Triggers)
     
     // Salva sempre que o usuário digitar algo ou clicar
@@ -4552,9 +4598,45 @@ function toggleOtherAvaria(checkbox) {
         }
     }
 }
-    
-    
 
+
+// =========================================================================
+// MOTOR AUTOMÁTICO DE CONTAGEM
+// =========================================================================
+
+// =========================================================================
+// VERIFICADOR SIMPLES DE LIMITE DE CARACTERES
+// =========================================================================
+
+// =========================================================================
+// VERIFICADOR DE LIMITE - COR VERMELHA (À PROVA DE FALHAS)
+// =========================================================================
+
+function verificarCoresLimite() {
+    var textareas = document.querySelectorAll('.inp-obs');
+    
+    textareas.forEach(function(textarea) {
+        // Procura a mensagem de aviso dentro da mesma coluna (muito mais seguro)
+        var aviso = textarea.parentElement.querySelector('.contador-obs');
+        
+        if (aviso) {
+            // Usamos >= 130 para garantir que ativa mesmo que haja quebras de linha invisíveis
+            if (textarea.value.length >= 130) {
+                // Força a cor vermelha
+                aviso.style.color = 'red';
+            } else {
+                // Mantém a cor cinzenta
+                aviso.style.color = '#555';
+            }
+        }
+    });
+}
+
+// 1. Atualiza a cor INSTANTANEAMENTE mal o utilizador digite uma letra
+document.addEventListener('input', verificarCoresLimite);
+
+// 2. Mantém o motor a verificar a cada meio segundo (para casos de "Copiar/Colar" ou limpeza)
+setInterval(verificarCoresLimite, 500);
     </script>
     
     
