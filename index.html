@@ -12,6 +12,26 @@
 
     <style>
 
+.watermark-footer {
+    position: fixed;
+    bottom: 12px;
+    right: 15px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #ffffff; /* Texto branco bem nítido */
+    background: rgba(0, 43, 73, 0.85); /* Azul escuro da marca com leve transparência */
+    padding: 6px 14px;
+    border-radius: 20px; /* Formato pílula arredondado */
+    border: 1px solid rgba(0, 163, 224, 0.5); /* Borda em azul ciano elegante */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Sombra para dar destaque */
+    backdrop-filter: blur(4px); /* Efeito de vidro desfocado */
+    z-index: 99999; /* Garante que fique acima de tudo */
+    pointer-events: none; /* Não atrapalha cliques em botões atrás */
+    user-select: none;
+    font-family: Arial, sans-serif;
+    letter-spacing: 0.5px;
+}
+
         /* Trava de Segurança: Esconde o botão de PDF se o mainForm estiver oculto */
 #mainForm[style*="none"] #btn-download,
 #mainForm[style*="none"] .btn-generate,
@@ -5066,6 +5086,10 @@ function toggleNAContainerManual(chk) {
     </script>
     
     
+<!-- MARCA D'ÁGUA / CRÉDITOS -->
+<div class="watermark-footer">
+    Developed BY: MARCELO BARRETO
+</div>
 
     </body>
 
