@@ -11,6 +11,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
+
+        /* Trava de Segurança: Esconde o botão de PDF se o mainForm estiver oculto */
+#mainForm[style*="none"] #btn-download,
+#mainForm[style*="none"] .btn-generate,
+#mainForm[style*="none"] .btn-group {
+    display: none !important;
+}
         .logo-login {
     max-width: 150px;   /* Largura máxima da imagem (ajuste se achar pequeno) */
     height: auto;       /* Mantém a proporção */
@@ -623,7 +630,7 @@
 } 
     .editor-canvas-container { 
     flex: 1; 
-    overflow: hidden; /* Removemos 'auto' para evitar rolagem dupla */
+    overflow: hidden; /*  'auto' para evitar rolagem dupla */
     border: 1px solid #ccc; 
     margin: 15px 0; 
     background: #f0f0f0; 
@@ -639,34 +646,101 @@
     box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Sombra para destacar a folha */
 }
     /* --- ESTILOS DE ASSINATURA (ATUALIZADO) --- */
-        .signatures-box { 
-            margin-top: 30px; 
-            display: flex; 
-            justify-content: space-around; 
-            align-items: flex-end; /* Alinha a base dos elementos */
-            text-align: center; 
-            font-size: 10px; 
-        }
-        .sig-block {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 200px;
-        }
-        .sig-line { 
-            border-top: 1px solid #000; 
-            width: 100%; 
-            padding-top: 5px; 
-            font-weight: bold;
-        }
-        /* Classe para a imagem da assinatura */
-        .sig-image {
-            width: 120px; /* Ajuste o tamanho conforme necessário */
-            height: auto;
-            margin-bottom: -10px; /* Puxa a assinatura um pouco pra baixo, sobre a linha */
-            object-fit: contain;
-            pointer-events: none; /* Evita cliques na imagem */
-        }
+.signatures-box { 
+    margin-top: 30px; 
+    display: flex; 
+    justify-content: space-around; 
+    align-items: flex-end;
+    text-align: center; 
+    font-size: 10px; 
+}
+.sig-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 200px;
+}
+.sig-line { 
+    border-top: 1px solid #000; 
+    width: 100%; 
+    padding-top: 5px; 
+    font-weight: bold;
+}
+.sig-image {
+    width: 120px;
+    height: auto;
+    margin-bottom: -10px;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+/* 👇 ESTILOS DA ASM) 👇 */
+.asm-instructions-box {
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 18px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.asm-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #0f172a;
+    margin-bottom: 4px;
+}
+
+.asm-subtitle {
+    font-size: 12px;
+    color: #475569;
+    font-style: italic;
+    margin-bottom: 12px;
+}
+
+.asm-section-header {
+    font-size: 13px;
+    font-weight: bold;
+    color: #002B49;
+    border-bottom: 2px solid #002B49;
+    padding-bottom: 4px;
+    margin-bottom: 12px;
+}
+
+.asm-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.asm-item {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #fecdd3;
+    border-radius: 4px;
+    padding: 8px 12px;
+}
+
+.asm-tag {
+    display: inline-block;
+    font-weight: bold;
+    font-size: 11px;
+    color: #9f1239;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.asm-item ul {
+    margin: 0;
+    padding-left: 16px;
+    list-style: none;
+}
+
+.asm-item li {
+    font-size: 12px;
+    color: #334155;
+    line-height: 1.4;
+}
         </style>
     <head>
     <body>
@@ -685,77 +759,149 @@
            <img src="data:image/png;base64,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" alt="Wilson Sons Logo" class="morpheus-logo">
             <h1>Gerador de Relatório Operacional - ARMAZÉM</h1>
         </div>
-        <div class="content-body">
-            <div class="selection-panel">
-                <label style="margin-bottom: 10px; display:block; text-align:center; font-size:16px; color:var(--ws-blue);">
-                    Selecione o Relatório Desejado.
-                </label>
-                <input type="hidden" id="categoria">
-                <div class="category-group">
-                    <div class="cat-btn" onclick="selectCategory('termo', this)">
-                        <span class="cat-btn-icon">📋</span>
-                        <strong>Termo de Falta/Avaria</strong>
-                    </div>
-                    <div class="cat-btn" onclick="selectCategory('bagagem', this)">
-                        <span class="cat-btn-icon">🧳</span>
-                        <strong>Relatório de Bagagem</strong>
-                    </div>
-                    <div class="cat-btn" onclick="selectCategory('pesagem', this)">
-                        <span class="cat-btn-icon">⚖️</span>
-                        <strong>Ticket de Pesagem</strong>
-                    </div>
-                    <div class="cat-btn" onclick="selectCategory('desova', this)">
-                        <span class="cat-btn-icon">📦</span>
-                        <strong>Relatório de Desova/Ovação</strong>
-                    </div>
-                    <div class="cat-btn" onclick="selectCategory('lacres', this)">
-                        <span class="cat-btn-icon">🔒</span>
-                        <strong>Relatório Lacres</strong>
-                    </div>
-                </div>
-
-                <!-- LINHA INFERIOR CENTRALIZADA PARA AS SAÍDAS -->
-                    <div style="flex-basis: 100%; display: flex; justify-content: center; gap: 15px; margin-top: 5px;">
-                        
-                        <!-- Botão 1: Saída de Baú -->
-                        <div class="cat-btn" onclick="selectCategory('saida_bau', this)" style="margin: 0; flex: 0 0 auto; width: 150px;">
-                            <span class="cat-btn-icon">🚛</span>
-                            <strong>Saída de Baú</strong>
-                        </div>
-                        
-                        <!-- Botão 2: Saída Manual -->
-                        <div class="cat-btn" onclick="selectCategory('saida_manual', this)" style="margin: 0; flex: 0 0 auto; width: 150px;">
-                            <span class="cat-btn-icon">📝</span>
-                            <strong>Saída Manual (Carga)</strong>
-                        </div>
-
-                    </div>
-                
-                <div id="row-tipo-especifico" class="row" style="display:none; animation: fadeIn 0.5s;">
-                    <div class="col">
-                        <label>Selecione o Tipo Específico:</label>
-                        <select id="tipo_especifico" onchange="initializeForm()" style="padding: 12px; font-size: 15px; border: 2px solid var(--ws-cyan);">
-                            <option value="">Aguardando seleção...</option>
-                        </select>
-                    </div>
-                </div>
+<div class="content-body">
+    
+   <!-- PAINEL DE SELEÇÃO PRINCIPAL -->
+    <div class="selection-panel">
+        <label style="margin-bottom: 12px; display:block; text-align:center; font-size:16px; font-weight:bold; color:var(--ws-blue, #002B49);">
+            Selecione o Relatório Desejado.
+        </label>
+        <input type="hidden" id="categoria">
+        
+        <!-- LINHA 1 DE BOTÕES (5 PRIMEIROS) -->
+        <div class="category-group" style="display: flex; justify-content: center; gap: 10px; width: 100%; margin-bottom: 10px;">
+            <div class="cat-btn" onclick="selectCategory('termo', this)">
+                <span class="cat-btn-icon">📋</span>
+                <strong>Termo de Falta/Avaria</strong>
             </div>
-            <style>@keyframes fadeIn { from {opacity:0; transform:translateY(-10px);} to {opacity:1; transform:translateY(0);} }</style>
-            <div id="mainForm" style="display:none;">
-                <div id="reports-container"></div>
-                <div id="cascade-actions" class="cascade-actions">
-                    <p><strong>Adicionar sequência:</strong></p>
-                    <button type="button" class="btn-cascade" onclick="addSection('avaria')">➕ Adicionar Avaria</button>
-                    <button type="button" class="btn-cascade" onclick="addSection('ovacao')">➕ Adicionar Ovação</button>
-                </div>
-                <div class="btn-group">
-                    <button type="button" class="btn-clear" onclick="limparTudo()">Limpar Tudo</button> 
-</button>
-                    <button type="button" class="btn-generate" id="btn-download" onclick="generateAllPDFs()">⬇️ Baixar PDF Completo</button>
-                </div>
+            <div class="cat-btn" onclick="selectCategory('bagagem', this)">
+                <span class="cat-btn-icon">🧳</span>
+                <strong>Relatório de Bagagem</strong>
+            </div>
+            <div class="cat-btn" onclick="selectCategory('pesagem', this)">
+                <span class="cat-btn-icon">⚖️</span>
+                <strong>Ticket de Pesagem</strong>
+            </div>
+            <div class="cat-btn" onclick="selectCategory('desova', this)">
+                <span class="cat-btn-icon">📦</span>
+                <strong>Relatório de Desova/Ovação</strong>
+            </div>
+            <div class="cat-btn" onclick="selectCategory('lacres', this)">
+                <span class="cat-btn-icon">🔒</span>
+                <strong>Relatório Lacres</strong>
+            </div>
+        </div>
+
+        <!-- LINHA 2 DE BOTÕES (SAÍDAS + ASM) -->
+        <div class="category-group" style="display: flex; justify-content: center; gap: 10px; width: 100%;">
+            <div class="cat-btn" onclick="selectCategory('saida_bau', this)">
+                <span class="cat-btn-icon">🚛</span>
+                <strong>Saída de Baú</strong>
+            </div>
+            <div class="cat-btn" onclick="selectCategory('saida_manual', this)">
+                <span class="cat-btn-icon">📝</span>
+                <strong>Saída Manual (Carga)</strong>
+            </div>
+            <div class="cat-btn" onclick="selectCategory('asm', this)">
+                <span class="cat-btn-icon">📜</span>
+                <strong>Autorização de Saída (ASM)</strong>
+            </div>
+        </div>
+
+        <!-- SELETOR DE TIPO ESPECÍFICO (100% LARGURA COM BORDA CIANO) -->
+        <div id="row-tipo-especifico" class="row" style="display:none; margin-top: 15px; animation: fadeIn 0.5s;">
+            <div class="col" style="width: 100%;">
+                <label style="display: block; font-weight: bold; margin-bottom: 6px; color: var(--ws-blue, #002B49);">
+                    Selecione o Tipo Específico:
+                </label>
+                <select id="tipo_especifico" onchange="initializeForm()" style="width: 100%; padding: 12px; font-size: 15px; border: 2px solid var(--ws-cyan, #00a3e0); border-radius: 4px; background-color: #fff; box-sizing: border-box;">
+                    <option value="">Aguardando seleção...</option>
+                </select>
+            </div>
+        </div>
+
+    </div> <!-- FIM DA SELECTION-PANEL -->
+    <style>@keyframes fadeIn { from {opacity:0; transform:translateY(-10px);} to {opacity:1; transform:translateY(0);} }</style>
+
+    <!-- 2. INSTRUÇÕES BÁSICAS DA ASM (OCULTO) -->
+    <div id="asm-instructions-box" class="asm-instructions-box" style="display: none; margin-top: 15px; margin-bottom: 20px;">
+        <div class="asm-title">📋 Instruções Básicas</div>
+        <div class="asm-subtitle">Todas as entradas e saídas de bens, mercadorias, produtos e etc. devem ser efetivadas pelo almoxarifado.</div>
+        
+        <div class="asm-section-header">Documentos básicos para confecção da NT ou NF:</div>
+
+        <div class="asm-grid">
+            <div class="asm-item">
+                <span class="asm-tag">REMESSA P/ CONSERTO</span>
+                <ul><li><b>1.</b> A SM assinada pelo solicitante e gestor</li></ul>
+            </div>
+            <div class="asm-item">
+                <span class="asm-tag">DEVOLUÇÃO</span>
+                <ul>
+                    <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
+                    <li><b>2.</b> NF de entrada do fornecedor</li>
+                    <li><b>3.</b> Aceite do fornecedor por e-mail da operação</li>
+                </ul>
+            </div>
+            <div class="asm-item">
+                <span class="asm-tag">VENDA DE ATIVO</span>
+                <ul>
+                    <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
+                    <li><b>2.</b> NF de entrada do fornecedor</li>
+                    <li><b>3.</b> Carta da CODEBA</li>
+                    <li><b>4.</b> Carta do IFC</li>
+                </ul>
+            </div>
+            <div class="asm-item">
+                <span class="asm-tag">DESCARTE DE SUCATA/MATERIAL</span>
+                <ul>
+                    <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
+                    <li><b>2.</b> Diferimento do fornecedor junto a SEFAZ-BA ou DAE Pago</li>
+                </ul>
+            </div>
+            <div class="asm-item">
+                <span class="asm-tag">OUTRAS SAÍDAS</span>
+                <ul>
+                    <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
+                    <li><b>2.</b> E etc.</li>
+                </ul>
+            </div>
+            <div class="asm-item">
+                <span class="asm-tag">VENDA DE SUCATA</span>
+                <ul>
+                    <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
+                    <li><b>2.</b> DAE Pago e o comprovante do depósito</li>
+                    <li><b>3.</b> Comprovante do depósito conta TECON/Wilport</li>
+                </ul>
+            </div>
+            <div class="asm-item">
+                <span class="asm-tag">REMESSA entre empresas do Grupo (TECON X WILPORT)</span>
+                <ul>
+                    <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
+                    <li><b>2.</b> Autorização da ADM-FIN</li>
+                </ul>
             </div>
         </div>
     </div>
+
+<!-- FORMULÁRIO PRINCIPAL (DEVE EXISTIR APENAS ESTE NO CÓDIGO INTEIRO) -->
+    <div id="mainForm" style="display: none;">
+        <div id="reports-container"></div>
+        
+        <div id="cascade-actions" class="cascade-actions">
+            <p><strong>Adicionar sequência:</strong></p>
+            <button type="button" class="btn-cascade" onclick="addSection('avaria')">➕ Adicionar Avaria</button>
+            <button type="button" class="btn-cascade" onclick="addSection('ovacao')">➕ Adicionar Ovação</button>
+        </div>
+        
+        <div class="btn-group" style="margin-top: 15px;">
+            <button type="button" class="btn-clear" onclick="limparTudo()">Limpar Tudo</button>
+            <button type="button" class="btn-generate" id="btn-download" onclick="generateAllPDFs()">⬇️ Baixar PDF Completo</button>
+        </div>
+    </div> <!-- FECHA O MAINFORM -->
+
+</div> <!-- FECHA A CONTENT-BODY -->
+
     <div id="imageEditorModal" class="modal-overlay">
     <div class="modal-content">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
@@ -1181,6 +1327,108 @@
         </div>
     </div>
     <div id="print-area"></div>
+
+    <!-- TEMPLATE: AUTORIZAÇÃO DE SAÍDA DE MATERIAL (ASM) -->
+<template id="tpl-asm">
+    <div class="report-section" data-type="asm">
+        <button type="button" class="section-close-btn" onclick="removeSection(this)">🗑️ Remover Seção</button>
+        <h3 class="section-title">AUTORIZAÇÃO DE SAÍDA DE MATERIAL (ASM)</h3>
+
+        <!-- SELEÇÃO DA OPERAÇÃO DA ASM -->
+        <div class="row">
+            <div class="col">
+                <label>Selecione a Operação ASM:</label>
+                <select class="inp-asm-operacao">
+                    <option value="">Selecione a Operação...</option>
+                    <option value="asm_terceiros">ASM TERCEIROS - SAÍDA PARA TERCEIRO</option>
+                    <option value="asm_tecon">ASM TECON - SAÍDA INTERNA</option>
+                    <option value="asm_gescon">ASM GESCON - SAÍDA PARA EMPRESA GESCON</option>
+                    <option value="asm_tubetes">ASM TUBETES - SAÍDA PARA EMPRESA DE TUBETS - MOTASERV</option>
+                    <option value="asm_wilport">ASM WILPORT - SAÍDA PARA O CENTRO LOGÍSTICO</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 📋 MANUAL DE INSTRUÇÕES BÁSICAS (DENTRO DA SEÇÃO) -->
+        <div class="asm-instructions-box">
+            <div class="asm-title">📋 Instruções Básicas</div>
+            <p class="asm-subtitle">Todas as entradas e saídas de bens, mercadorias, produtos e etc. devem ser efetivadas pelo almoxarifado.</p>
+            
+            <div class="asm-section-header">Documentos básicos para confecção da NT ou NF:</div>
+
+            <div class="asm-grid">
+                <!-- Item 1 -->
+                <div class="asm-item">
+                    <span class="asm-tag">REMESSA P/ CONSERTO</span>
+                    <ul>
+                        <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
+                    </ul>
+                </div>
+
+                <!-- Item 2 -->
+                <div class="asm-item">
+                    <span class="asm-tag">DEVOLUÇÃO</span>
+                    <ul>
+                        <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
+                        <li><b>2.</b> NF de entrada do fornecedor</li>
+                        <li><b>3.</b> Aceite do fornecedor por e-mail da operação</li>
+                    </ul>
+                </div>
+
+                <!-- Item 3 -->
+                <div class="asm-item">
+                    <span class="asm-tag">VENDA DE ATIVO</span>
+                    <ul>
+                        <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
+                        <li><b>2.</b> NF de entrada do fornecedor</li>
+                        <li><b>3.</b> Carta da CODEBA</li>
+                        <li><b>4.</b> Carta do IFC</li>
+                    </ul>
+                </div>
+
+                <!-- Item 4 -->
+                <div class="asm-item">
+                    <span class="asm-tag">DESCARTE DE SUCATA/MATERIAL</span>
+                    <ul>
+                        <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
+                        <li><b>2.</b> Diferimento do fornecedor junto a SEFAZ-BA ou DAE Pago</li>
+                    </ul>
+                </div>
+
+                <!-- Item 5 -->
+                <div class="asm-item">
+                    <span class="asm-tag">OUTRAS SAÍDAS</span>
+                    <ul>
+                        <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
+                        <li><b>2.</b> E etc.</li>
+                    </ul>
+                </div>
+
+                <!-- Item 6 -->
+                <div class="asm-item">
+                    <span class="asm-tag">VENDA DE SUCATA</span>
+                    <ul>
+                        <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
+                        <li><b>2.</b> DAE Pago e o comprovante do depósito</li>
+                        <li><b>3.</b> Comprovante do depósito conta TECON/Wilport</li>
+                    </ul>
+                </div>
+
+                <!-- Item 7 -->
+                <div class="asm-item">
+                    <span class="asm-tag">REMESSA entre empresas do Grupo (TECON X WILPORT)</span>
+                    <ul>
+                        <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
+                        <li><b>2.</b> Autorização da ADM-FIN</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" class="inp-subtype" value="asm">
+    </div>
+</template>
+
     <script>
 
 
@@ -1392,11 +1640,19 @@ const opcoes = {
             "desova": [ { val: "relatorio_desova", text: "Relatório de Desova" }, { val: "relatorio_ovacao", text: "Relatório de Ovação" } ],
             "lacres": [ { val: "divergencia_lacre", text: "DIVERGÊNCIA DE LACRE" }, { val: "lacres_termo", text: "LACRES - TERMO DE RESPONSABILIDADE" } ],
             
-            // --- NOSSAS NOVAS OPÇÕES AQUI ---
+            // --- OPÇÕES saída baús e saída manual---
             "saida_bau": [ { val: "saida_bau", text: "Termo de Saída de Container Baú" } ],
             "saida_manual": [ { val: "saida_manual", text: "Ordem de Serviço - Saída Manual Carga" } ]
         };
 
+        // --- OPÇÕES saída ASM
+  opcoes['asm'] = [
+    { val: 'asm_terceiros', text: 'ASM TERCEIROS - SAÍDA PARA TERCEIRO' },
+    { val: 'asm_tecon', text: 'ASM TECON - SAÍDA INTERNA' },
+    { val: 'asm_gescon', text: 'ASM GESCON - SAÍDA PARA EMPRESA GESCON' },
+    { val: 'asm_tubetes', text: 'ASM TUBETES - SAÍDA PARA EMPRESA DE TUBETS - MOTASERV' },
+    { val: 'asm_wilport', text: 'ASM WILPORT - SAÍDA PARA O CENTRO LOGÍSTICO' }
+];
         // --- VARIÁVEIS DO EDITOR ---
 
         let currentEditorSlot = null;
@@ -1727,9 +1983,6 @@ const opcoes = {
 
     // --- VARIÁVEIS DO EDITOR ---
 
-        // (Mantenha suas variáveis globais aqui...)
-
-        
 
         // --- NOVA LÓGICA DE SELEÇÃO POR BOTÕES ---
 
@@ -1757,35 +2010,100 @@ const opcoes = {
 
         }
 
-        function updateSubTypes(cat) {
+       function updateSubTypes(cat) {
+    const subSelect = document.getElementById("tipo_especifico");
+    subSelect.innerHTML = '<option value="">Selecione uma opção...</option>';
+    
+    if (cat && opcoes[cat]) {
+        opcoes[cat].forEach(opt => {
+            const option = document.createElement("option");
+            option.value = opt.val;
+            option.text = opt.text;
+            subSelect.appendChild(option);
+        });
+    }
 
-            const subSelect = document.getElementById("tipo_especifico");
+    // Esconde o formulário principal ao trocar de categoria
+    const mainForm = document.getElementById("mainForm");
+    if (mainForm) mainForm.style.display = "none";
 
-            subSelect.innerHTML = '<option value="">Selecione uma opção...</option>';
+    const rowTipo = document.getElementById("row-tipo-especifico");
+    let asmBox = document.getElementById("asm-instructions-box");
 
-            
+    if (cat === 'asm') {
+        // Se ainda não existir o quadro na tela, cria ele dinamicamente
+        if (!asmBox) {
+            asmBox = document.createElement("div");
+            asmBox.id = "asm-instructions-box";
+            asmBox.className = "asm-instructions-box";
+            asmBox.innerHTML = `
+                <div class="asm-title">📋 Instruções Básicas</div>
+                <div class="asm-subtitle">Todas as entradas e saídas de bens, mercadorias, produtos e etc. devem ser efetivadas pelo almoxarifado.</div>
+                
+                <div class="asm-section-header">Documentos básicos para confecção da NT ou NF:</div>
 
-            if (cat && opcoes[cat]) {
-
-                opcoes[cat].forEach(opt => {
-
-                    const option = document.createElement("option");
-
-                    option.value = opt.val;
-
-                    option.text = opt.text;
-
-                    subSelect.appendChild(option);
-
-                });
-
-            }
-
-            // Esconde o formulário principal ao trocar de categoria para evitar conflito
-
-            document.getElementById("mainForm").style.display = "none";
-
+                <div class="asm-grid">
+                    <div class="asm-item">
+                        <span class="asm-tag">REMESSA P/ CONSERTO</span>
+                        <ul><li><b>1.</b> A SM assinada pelo solicitante e gestor</li></ul>
+                    </div>
+                    <div class="asm-item">
+                        <span class="asm-tag">DEVOLUÇÃO</span>
+                        <ul>
+                            <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
+                            <li><b>2.</b> NF de entrada do fornecedor</li>
+                            <li><b>3.</b> Aceite do fornecedor por e-mail da operação</li>
+                        </ul>
+                    </div>
+                    <div class="asm-item">
+                        <span class="asm-tag">VENDA DE ATIVO</span>
+                        <ul>
+                            <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
+                            <li><b>2.</b> NF de entrada do fornecedor</li>
+                            <li><b>3.</b> Carta da CODEBA</li>
+                            <li><b>4.</b> Carta do IFC</li>
+                        </ul>
+                    </div>
+                    <div class="asm-item">
+                        <span class="asm-tag">DESCARTE DE SUCATA/MATERIAL</span>
+                        <ul>
+                            <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
+                            <li><b>2.</b> Diferimento do fornecedor junto a SEFAZ-BA ou DAE Pago</li>
+                        </ul>
+                    </div>
+                    <div class="asm-item">
+                        <span class="asm-tag">OUTRAS SAÍDAS</span>
+                        <ul>
+                            <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
+                            <li><b>2.</b> E etc.</li>
+                        </ul>
+                    </div>
+                    <div class="asm-item">
+                        <span class="asm-tag">VENDA DE SUCATA</span>
+                        <ul>
+                            <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
+                            <li><b>2.</b> DAE Pago e o comprovante do depósito</li>
+                            <li><b>3.</b> Comprovante do depósito conta TECON/Wilport</li>
+                        </ul>
+                    </div>
+                    <div class="asm-item">
+                        <span class="asm-tag">REMESSA entre empresas do Grupo (TECON X WILPORT)</span>
+                        <ul>
+                            <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
+                            <li><b>2.</b> Autorização da ADM-FIN</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            // INSERE LOGO ABAIXO DO "row-tipo-especifico"
+            rowTipo.parentNode.insertBefore(asmBox, rowTipo.nextSibling);
         }
+        asmBox.style.display = "block";
+    } else if (asmBox) {
+        // Esconde as instruções caso selecione outro tipo de relatório
+        asmBox.style.display = "none";
+    }
+}
 
 function initializeForm() {
     const select = document.getElementById('tipo_especifico');
@@ -4590,7 +4908,6 @@ function createSaidaManualHTML(section) {
             
             <div class="center-alert">
                 ${cliente}<br><br>
-                Carregamento em questão foi cancelado - Esta liberação Manual trata-se apenas para liberação do veículo do terminal.
             </div>
             <hr>
             
