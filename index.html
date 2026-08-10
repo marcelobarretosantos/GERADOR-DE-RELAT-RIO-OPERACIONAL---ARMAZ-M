@@ -2328,11 +2328,13 @@ function addSection(type, isFirst = false, termoSubtype = "") {
     }
 
     const template = document.getElementById(templateId);
-    if (!template) {
-        alert("Ops! O template '" + templateId + "' não existe no seu HTML. Verifique o ID da tag <template>.");
-        console.error("ERRO: O HTML do template " + templateId + " não foi encontrado!");
-        return;
-    }
+ if (!template) { 
+    // Mensagem com ícone de ferramenta e relógio de espera
+    alert("🛠️ Ops! Essa função não está disponível " + templateId + "'\n⏳ Função ainda está em construção."); 
+    
+    console.error("ERRO: O HTML do template " + templateId + " Aguarde que em breve estará pronto!"); 
+    return; 
+}
 
     const clone = template.content.cloneNode(true);
     const section = clone.querySelector('.report-section');
