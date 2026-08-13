@@ -993,11 +993,11 @@
                 <div class="col"><label>Op. Empilhadeira: <button type="button" class="btn-mini-add" onclick="addStaff(this)">+Add</button></label><div class="container-staff"></div></div>
                 <div class="col"><label>Auxiliares: <button type="button" class="btn-mini-add" onclick="addStaff(this)">+Add</button></label><div class="container-staff"></div></div>
             </div>
-            <div class="row">
+           <div class="row">
                 <div class="col">
                     <label>Observação:</label>
-                    <textarea class="inp-obs" rows="2" maxlength="131"></textarea>
-                    <div class="contador-obs" style="font-size: 12px; color: #555; text-align: right; margin-top: 4px; font-weight: bold;">Limite: 131 caracteres</div>
+                    <textarea class="inp-obs" rows="3" style="width: 100%; resize: vertical;" maxlength="1391" placeholder="Descreva as observações detalhadamente aqui..." oninput="checkCharLimit(this)"></textarea>
+                    <div class="char-counter" style="font-size: 11px; color: #666; text-align: right; margin-top: 2px; font-weight: bold;">Caracteres: 0 / 1391</div>
                 </div>
             </div>
             
@@ -1070,11 +1070,11 @@
                     Outro: <input type="text" class="inp-other-avaria" disabled style="width: 150px; padding: 2px; margin-left: 5px;" placeholder="Descreva...">
                 </div>
             </div>
-            <div class="row">
+         <div class="row">
                 <div class="col">
                     <label>Observação:</label>
-                    <textarea class="inp-obs" rows="2" maxlength="131"></textarea>
-                    <div class="contador-obs" style="font-size: 12px; color: #555; text-align: right; margin-top: 4px; font-weight: bold;">Limite: 131 caracteres</div>
+                    <textarea class="inp-obs" rows="3" style="width: 100%; resize: vertical;" maxlength="1391" placeholder="Descreva as observações detalhadamente aqui..." oninput="checkCharLimit(this)"></textarea>
+                    <div class="char-counter" style="font-size: 11px; color: #666; text-align: right; margin-top: 2px; font-weight: bold;">Caracteres: 0 / 1391</div>
                 </div>
             </div>
             <h4>Fotos (Clique ou Arraste)</h4>
@@ -1117,8 +1117,8 @@
             <div class="row">
                 <div class="col">
                     <label>Observação:</label>
-                    <textarea class="inp-obs" rows="2" maxlength="131"></textarea>
-                    <div class="contador-obs" style="font-size: 12px; color: #555; text-align: right; margin-top: 4px; font-weight: bold;">Limite: 131 caracteres</div>
+                    <textarea class="inp-obs" rows="3" style="width: 100%; resize: vertical;" maxlength="1391" placeholder="Descreva as observações detalhadamente aqui..." oninput="checkCharLimit(this)"></textarea>
+                    <div class="char-counter" style="font-size: 11px; color: #666; text-align: right; margin-top: 2px; font-weight: bold;">Caracteres: 0 / 1391</div>
                 </div>
             </div>
             
@@ -1405,107 +1405,78 @@
     </div>
     <div id="print-area"></div>
 
-    <!-- TEMPLATE: AUTORIZAÇÃO DE SAÍDA DE MATERIAL (ASM) -->
-<template id="tpl-asm">
-    <div class="report-section" data-type="asm">
-        <button type="button" class="section-close-btn" onclick="removeSection(this)">🗑️ Remover Seção</button>
-        <h3 class="section-title">AUTORIZAÇÃO DE SAÍDA DE MATERIAL (ASM)</h3>
+  <!-- TEMPLATE: AUTORIZAÇÃO DE SAÍDA (ASM) -->
+    <template id="tpl-asm">
+        <div class="report-section" data-type="asm">
+            <button type="button" class="section-close-btn" onclick="removeSection(this)">🗑️ Remover Seção</button>
+            <h3 class="section-title">AUTORIZAÇÃO DE SAÍDA (ASM)</h3>
 
-        <!-- SELEÇÃO DA OPERAÇÃO DA ASM -->
-        <div class="row">
-            <div class="col">
-                <label>Selecione a Operação ASM:</label>
-                <select class="inp-asm-operacao">
-                    <option value="">Selecione a Operação...</option>
-                    <option value="asm_terceiros">ASM TERCEIROS - SAÍDA PARA TERCEIRO</option>
-                    <option value="asm_tecon">ASM TECON - SAÍDA INTERNA</option>
-                    <option value="asm_gescon">ASM GESCON - SAÍDA PARA EMPRESA GESCON</option>
-                    <option value="asm_tubetes">ASM TUBETES - SAÍDA PARA EMPRESA DE TUBETS - MOTASERV</option>
-                    <option value="asm_wilport">ASM WILPORT - SAÍDA PARA O CENTRO LOGÍSTICO</option>
-                </select>
+            <!-- DESTINATÁRIO -->
+            <h4>Dados do Destinatário</h4>
+            <div class="row">
+                <div class="col"><label>Nome / Razão Social:</label><input type="text" class="inp-dest-nome"></div>
+                <div class="col"><label>CNPJ / CPF:</label><input type="text" class="inp-dest-cnpj"></div>
             </div>
-        </div>
+            <div class="row">
+                <div class="col"><label>Endereço / Bairro:</label><input type="text" class="inp-dest-end"></div>
+                <div class="col"><label>Município / UF:</label><input type="text" class="inp-dest-mun"></div>
+            </div>
+            <div class="row">
+                <div class="col"><label>Telefone:</label><input type="text" class="inp-dest-tel"></div>
+                <div class="col"><label>Data de Saída:</label><input type="text" class="inp-data" placeholder="dd/mm/aaaa" maxlength="10"></div>
+            </div>
 
-        <!-- 📋 MANUAL DE INSTRUÇÕES BÁSICAS (DENTRO DA SEÇÃO) -->
-        <div class="asm-instructions-box">
-            <div class="asm-title">📋 Instruções Básicas</div>
-            <p class="asm-subtitle">Todas as entradas e saídas de bens, mercadorias, produtos e etc. devem ser efetivadas pelo almoxarifado.</p>
-            
-            <div class="asm-section-header">Documentos básicos para confecção da NT ou NF:</div>
-
-            <div class="asm-grid">
-                <!-- Item 1 -->
-                <div class="asm-item">
-                    <span class="asm-tag">REMESSA P/ CONSERTO</span>
-                    <ul>
-                        <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
-                    </ul>
-                </div>
-
-                <!-- Item 2 -->
-                <div class="asm-item">
-                    <span class="asm-tag">DEVOLUÇÃO</span>
-                    <ul>
-                        <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
-                        <li><b>2.</b> NF de entrada do fornecedor</li>
-                        <li><b>3.</b> Aceite do fornecedor por e-mail da operação</li>
-                    </ul>
-                </div>
-
-                <!-- Item 3 -->
-                <div class="asm-item">
-                    <span class="asm-tag">VENDA DE ATIVO</span>
-                    <ul>
-                        <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
-                        <li><b>2.</b> NF de entrada do fornecedor</li>
-                        <li><b>3.</b> Carta da CODEBA</li>
-                        <li><b>4.</b> Carta do IFC</li>
-                    </ul>
-                </div>
-
-                <!-- Item 4 -->
-                <div class="asm-item">
-                    <span class="asm-tag">DESCARTE DE SUCATA/MATERIAL</span>
-                    <ul>
-                        <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
-                        <li><b>2.</b> Diferimento do fornecedor junto a SEFAZ-BA ou DAE Pago</li>
-                    </ul>
-                </div>
-
-                <!-- Item 5 -->
-                <div class="asm-item">
-                    <span class="asm-tag">OUTRAS SAÍDAS</span>
-                    <ul>
-                        <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
-                        <li><b>2.</b> E etc.</li>
-                    </ul>
-                </div>
-
-                <!-- Item 6 -->
-                <div class="asm-item">
-                    <span class="asm-tag">VENDA DE SUCATA</span>
-                    <ul>
-                        <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
-                        <li><b>2.</b> DAE Pago e o comprovante do depósito</li>
-                        <li><b>3.</b> Comprovante do depósito conta TECON/Wilport</li>
-                    </ul>
-                </div>
-
-                <!-- Item 7 -->
-                <div class="asm-item">
-                    <span class="asm-tag">REMESSA entre empresas do Grupo (TECON X WILPORT)</span>
-                    <ul>
-                        <li><b>1.</b> A SM assinada pelo solicitante e gestor</li>
-                        <li><b>2.</b> Autorização da ADM-FIN</li>
-                    </ul>
+            <!-- MERCADORIAS -->
+            <h4>Dados do Bem / Mercadoria</h4>
+            <div class="asm-itens-container">
+                <!-- Linha padrão de item -->
+                <div class="row asm-item-row" style="align-items: center;">
+                    <div class="col" style="flex: 3;"><label>Descrição do Produto:</label><input type="text" class="inp-item-desc"></div>
+                    <div class="col" style="flex: 1;"><label>Unidade:</label><input type="text" class="inp-item-unid" placeholder="Ex: UN, CX, KG"></div>
+                    <div class="col" style="flex: 1;"><label>Quant.:</label><input type="number" class="inp-item-qtd" min="1"></div>
+                    <div style="margin-top: 25px;">
+                        <button type="button" class="btn-remove-item" onclick="this.closest('.row').remove()" style="background: #dc3545; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer;">❌</button>
+                    </div>
                 </div>
             </div>
+            <button type="button" onclick="addAsmItem(this)" style="margin-top: 10px; background: #1C355E; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer;">➕ Adicionar Novo Item</button>
+
+            <!-- MOTIVO E OBSERVAÇÕES -->
+            <h4 style="margin-top: 20px;">Motivo da Saída</h4>
+            <div class="row">
+                <div class="col">
+                    <label>Tipo de Saída:</label>
+                    <select class="inp-asm-motivo">
+                        <option value="">Selecione...</option>
+                        <option value="REMESSA P/ CONSERTO">Remessa p/ Conserto</option>
+                        <option value="DEVOLUÇÃO">Devolução</option>
+                        <option value="VENDA DE ATIVO">Venda de Ativo</option>
+                        <option value="OUTROS">Outros</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label>Detalhar o Motivo da Saída:</label>
+                    <textarea class="inp-asm-detalhe" rows="3" placeholder="Justificativa técnica ou operacional..."></textarea>
+                </div>
+            </div>
+
+            <!-- TRANSPORTADOR -->
+            <h4>Transportador / Veículo (Opcional)</h4>
+            <div class="row">
+                <div class="col"><label>Nome / Razão Social:</label><input type="text" class="inp-transp-nome"></div>
+                <div class="col"><label>Placa / UF:</label><input type="text" class="inp-transp-placa"></div>
+            </div>
+
+            <!-- AVISO SOBRE ASSINATURA FÍSICA -->
+            <div style="margin-top: 20px; padding: 10px; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; border-radius: 5px; font-weight: bold; text-align: center;">
+                ⚠️ As assinaturas (Solicitante e Gestor) deverão ser colhidas fisicamente após a impressão.
+            </div>
+
+            <input type="hidden" class="inp-subtype" value="asm">
         </div>
-
-        <input type="hidden" class="inp-subtype" value="asm">
-    </div>
-</template>
-
+    </template>
     <script>
 
 
@@ -2115,6 +2086,7 @@ const opcoes = {
     const subSelect = document.getElementById("tipo_especifico");
     subSelect.innerHTML = '<option value="">Selecione uma opção...</option>';
     
+    // Preenche as opções dinamicamente com base na categoria
     if (cat && opcoes[cat]) {
         opcoes[cat].forEach(opt => {
             const option = document.createElement("option");
@@ -2129,14 +2101,25 @@ const opcoes = {
     if (mainForm) mainForm.style.display = "none";
 
     const rowTipo = document.getElementById("row-tipo-especifico");
+    
+    // Exibe a linha do dropdown
+    if (rowTipo) {
+        rowTipo.style.display = "flex";
+    }
+
     let asmBox = document.getElementById("asm-instructions-box");
 
+    // Lógica para mostrar/injetar as instruções se a categoria for 'asm'
     if (cat === 'asm') {
         // Se ainda não existir o quadro na tela, cria ele dinamicamente
         if (!asmBox) {
             asmBox = document.createElement("div");
             asmBox.id = "asm-instructions-box";
             asmBox.className = "asm-instructions-box";
+            // Oculto por padrão, apenas pra transição
+            asmBox.style.display = "none";
+            asmBox.style.marginTop = "15px";
+            asmBox.style.marginBottom = "20px";
             asmBox.innerHTML = `
                 <div class="asm-title">📋 Instruções Básicas</div>
                 <div class="asm-subtitle">Todas as entradas e saídas de bens, mercadorias, produtos e etc. devem ser efetivadas pelo almoxarifado.</div>
@@ -2197,12 +2180,19 @@ const opcoes = {
                 </div>
             `;
             // INSERE LOGO ABAIXO DO "row-tipo-especifico"
-            rowTipo.parentNode.insertBefore(asmBox, rowTipo.nextSibling);
+            if (rowTipo && rowTipo.parentNode) {
+                rowTipo.parentNode.insertBefore(asmBox, rowTipo.nextSibling);
+            }
         }
+        
+        // Exibe o quadro
         asmBox.style.display = "block";
-    } else if (asmBox) {
-        // Esconde as instruções caso selecione outro tipo de relatório
-        asmBox.style.display = "none";
+        
+    } else {
+        // Se a categoria NÃO for 'asm', esconde as instruções caso elas existam
+        if (asmBox) {
+            asmBox.style.display = "none";
+        }
     }
 }
 
@@ -2211,16 +2201,26 @@ function initializeForm() {
     const val = select.value;
     const mainForm = document.getElementById('mainForm');
     const cascadeBtn = document.getElementById('cascade-actions');
+    const asmBox = document.getElementById('asm-instructions-box');
+    const catInput = document.getElementById('categoria');
 
     // Se voltar para "Aguardando seleção...", esconde o formulário
     if (!val) {
         if (mainForm) mainForm.style.display = 'none';
+        // Se estiver na aba ASM e limpar a seleção, mostra as instruções novamente
+        if (asmBox && catInput && catInput.value === 'asm') {
+            asmBox.style.display = 'block';
+        }
         return;
     }
 
     // Mostra a área principal e limpa container
     if (mainForm) mainForm.style.display = 'block';
     document.getElementById('reports-container').innerHTML = ''; 
+    // --- ESCONDE AS INSTRUÇÕES QUANDO COMEÇA O PREENCHIMENTO ---
+    if (asmBox) {
+        asmBox.style.display = 'none';
+    }
 
     // --- LÓGICA DE INTELIGÊNCIA: BOTÕES DE SEQUÊNCIA ---
     // Mostra os botões APENAS se for relatório de bagagem
@@ -2232,7 +2232,7 @@ function initializeForm() {
         }
     }
 
-    // --- ROTEAMENTO DINÂMICO ---
+  // --- ROTEAMENTO DINÂMICO ---
     if (val === 'avaria_interna' || val === 'avaria_origem') {
         addSection('termo', true, val);
     } 
@@ -2244,6 +2244,10 @@ function initializeForm() {
     } 
     else if (val === 'bagagem_avaria') {
         addSection('bagagem_avaria', true);
+    } 
+    // NOVA REGRA DE ROTEAMENTO DO ASM AQUI:
+    else if (val.startsWith('asm_')) {
+        addSection('asm', true, val); 
     } 
     else {
         addSection(val, true);
@@ -2313,7 +2317,6 @@ function addSection(type, isFirst = false, termoSubtype = "") {
         templateId = "tpl-termo";
         subtype = termoSubtype || type;
     } else if (type === "pesagem" || type === "pesagem_solta") {
-        // Tenta achar com "_solta", se não achar, usa o antigo "tpl-pesagem"
         templateId = document.getElementById("tpl-pesagem_solta") ? "tpl-pesagem_solta" : "tpl-pesagem";
         subtype = "pesagem_solta"; 
     } else if (type === "pesagem_container") {
@@ -2325,12 +2328,18 @@ function addSection(type, isFirst = false, termoSubtype = "") {
     } else if (type === "saida_manual") {
         templateId = "tpl-saida_manual";
         subtype = "saida_manual";
+    } 
+    // NOVA REGRA DO ASM AQUI:
+    else if (type === "asm") {
+        templateId = "tpl-asm";
+        subtype = termoSubtype; // Aqui ele recebe o "asm_wilport", "asm_tecon", etc.
     }
 
-    const template = document.getElementById(templateId);
+   const template = document.getElementById(templateId); 
+
  if (!template) { 
     // Mensagem com ícone de ferramenta e relógio de espera
-    alert("🛠️ Ops! Essa função não está disponível 🤯" + templateId + "'\n⏳ Função em construção. Em breve estará pronta. 😄 🚀"); 
+    alert("🛠️ Ops! Essa função não está disponível 🤯" + templateId + "'\n⏳ Função em construção. Em breve estará pronto 😄 🚀"); 
     
     console.error("ERRO: O HTML do template " + templateId + " Aguarde que em breve estará pronto!"); 
     return; 
@@ -2381,10 +2390,48 @@ function addSection(type, isFirst = false, termoSubtype = "") {
     }
 
    // =======================================================
+    // =======================================================
     // 3. ANEXAR NA TELA PRIMEIRO! 
     // =======================================================
     container.appendChild(clone);
     const sectionAtual = container.lastElementChild;
+
+   // =======================================================
+    // 3.5 INTELIGÊNCIA: AUTO-PREENCHIMENTO ASM E TÍTULOS
+    // =======================================================
+    if (type === 'asm' && sectionAtual) {
+        // 1. Ajusta o Título do Formulário
+        const titleEl = sectionAtual.querySelector('.section-title');
+        if (titleEl) {
+            if (subtype === 'asm_wilport') titleEl.innerText = "ASM WILPORT - SAÍDA PARA O CENTRO LOGÍSTICO";
+            else if (subtype === 'asm_terceiros') titleEl.innerText = "ASM TERCEIROS - SAÍDA PARA TERCEIRO";
+            else if (subtype === 'asm_tecon') titleEl.innerText = "ASM TECON - SAÍDA INTERNA";
+            else if (subtype === 'asm_gescon') titleEl.innerText = "ASM GESCON - SAÍDA PARA EMPRESA GESCON";
+            else if (subtype === 'asm_tubetes') titleEl.innerText = "ASM TUBETES - SAÍDA PARA EMPRESA DE TUBETES";
+        }
+
+        // 2. Preenche os campos do Destinatário
+        const destNome = sectionAtual.querySelector('.inp-dest-nome');
+        const destEnd = sectionAtual.querySelector('.inp-dest-end');
+        const destMun = sectionAtual.querySelector('.inp-dest-mun');
+        const destTel = sectionAtual.querySelector('.inp-dest-tel');
+
+        if (subtype === 'asm_wilport') {
+            if (destNome) destNome.value = "LM AMORIM";
+            if (destEnd) destEnd.value = "CHÁCARA - ESTR. BOM VIVER, 612 - BR-324";
+            if (destMun) destMun.value = "SALVADOR / BA";
+            if (destTel) destTel.value = "71 2106-1548";
+        } 
+        else if (subtype === 'asm_gescon') {
+            if (destNome) destNome.value = "GESCON";
+        } 
+        else if (subtype === 'asm_tubetes') {
+            if (destNome) destNome.value = "MOTASERV";
+        } 
+        else if (subtype === 'asm_tecon') {
+            if (destNome) destNome.value = "MOTASERV MANUTENÇÃO INDUSTRIAL LTDA";
+        }
+    }
 
     // ---------------------------------------------------
     // 4. INTELIGÊNCIA: COPIAR DADOS DO FORMULÁRIO ANTERIOR
@@ -2650,36 +2697,36 @@ function validateForms() {
             markError(assInp, "A seleção do Responsável pela Assinatura é obrigatória.");
         }
 
-        // --- 📸 2. VALIDAÇÃO UNIVERSAL DE FOTOS (TODOS OS FORMULÁRIOS) ---
-        const photoContainer = section.querySelector('.photo-container');
-        const isPhotoOpcionalOculta = photoContainer && photoContainer.style.display === 'none';
+    // --- 📸 2. VALIDAÇÃO UNIVERSAL DE FOTOS (TODOS OS FORMULÁRIOS) ---
+    const photoContainer = section.querySelector('.photo-container');
+    const isPhotoOpcionalOculta = photoContainer && photoContainer.style.display === 'none';
 
-        // Libera a cobrança de fotos para saida_bau e saida_manual
-        if (!isPhotoOpcionalOculta && type !== 'saida_bau' && type !== 'saida_manual') {
-            let temFoto = false;
-            const slots = section.querySelectorAll('.photo-grid .photo-slot');
-            
-            if (photoContainer && slots.length === 0) {
-                photoContainer.style.display = 'none';
-                const btnEnable = photoContainer.previousElementSibling;
-                if (btnEnable) btnEnable.style.display = 'block';
-            } 
-            else {
-                slots.forEach(slot => {
-                    const img = slot.querySelector('img');
-                    if (img) {
-                        const imgSrc = img.getAttribute('src');
-                        if (imgSrc && imgSrc.startsWith('data:image')) temFoto = true;
-                    }
-                });
-                
-                if (!temFoto) {
-                    const grid = section.querySelector('.photo-grid');
-                    if (grid) grid.classList.add('input-error');
-                    formErrors.push("Registro Fotográfico: É obrigatório inserir pelo menos uma foto.");
+    // Libera a cobrança de fotos para saida_bau, saida_manual e asm (Autorização de Saída)
+    if (!isPhotoOpcionalOculta && type !== 'saida_bau' && type !== 'saida_manual' && type !== 'asm' && !type.startsWith('asm_')) {
+        let temFoto = false;
+        const slots = section.querySelectorAll('.photo-grid .photo-slot');
+        
+        if (photoContainer && slots.length === 0) {
+            photoContainer.style.display = 'none';
+            const btnEnable = photoContainer.previousElementSibling;
+            if (btnEnable) btnEnable.style.display = 'block';
+        } 
+        else {
+            slots.forEach(slot => {
+                const img = slot.querySelector('img');
+                if (img) {
+                    const imgSrc = img.getAttribute('src');
+                    if (imgSrc && imgSrc.startsWith('data:image')) temFoto = true;
                 }
+            });
+            
+            if (!temFoto) {
+                const grid = section.querySelector('.photo-grid');
+                if (grid) grid.classList.add('input-error');
+                formErrors.push("Registro Fotográfico: É obrigatório inserir pelo menos uma foto.");
             }
         }
+    }
         
         // --- 3. VALIDAÇÃO EXCLUSIVA: TICKET DE PESAGEM ---
         if (type === 'pesagem' || subtype === 'pesagem_solta') {
@@ -2961,6 +3008,36 @@ function validateForms() {
                     markError(lacreInp, `Baú #${num}: Lacre(s) é obrigatório`);
                 }
             });
+        }
+        // --- 7. VALIDAÇÃO: AUTORIZAÇÃO DE SAÍDA (ASM) ---
+        else if (type === 'asm' || subtype === 'asm') {
+            const camposObrigatorios = [
+                { class: '.inp-dest-nome', msg: "Nome / Razão Social do destinatário é obrigatório." },
+                { class: '.inp-dest-mun', msg: "Município / UF é obrigatório." },
+                { class: '.inp-data', msg: "A Data de Saída é obrigatória." },
+                { class: '.inp-asm-motivo', msg: "O Tipo de Saída é obrigatório." }
+            ];
+
+            camposObrigatorios.forEach(campo => {
+                const el = section.querySelector(campo.class);
+                if (el && !el.value.trim()) markError(el, campo.msg);
+            });
+
+            // Inteligência extra: Garante que exista pelo menos um item preenchido
+            const linhasItens = section.querySelectorAll('.asm-item-row');
+            let temItemValido = false;
+
+            linhasItens.forEach(linha => {
+                const desc = linha.querySelector('.inp-item-desc')?.value.trim();
+                const qtd = linha.querySelector('.inp-item-qtd')?.value.trim();
+                
+                // Se a linha tem pelo menos descrição e quantidade, consideramos válida
+                if (desc && qtd && Number(qtd) > 0) {
+                    temItemValido = true;
+                }
+            });
+
+        
         }
         
         // --- 8. VALIDAÇÕES EXCLUSIVAS: SAÍDA MANUAL ---
@@ -4085,6 +4162,11 @@ async function generateAllPDFs() {
                         title = "ORDEM DE SERVIÇO - SAÍDA MANUAL";
                         await createReportPages(title, createSaidaManualHTML(section), photos, printArea, false);
                     }
+                    // ---> NOVA REGRA: AUTORIZAÇÃO DE SAÍDA (ASM) <---
+                    else if (type === 'asm' || subtype.startsWith('asm_')) {
+                        title = "AUTORIZAÇÃO DE SAÍDA (ASM)";
+                        await createReportPages(title, createAsmHTML(section), photos, printArea, false);
+                    }
                     // ---------------------------------------------------
 
                     else {
@@ -4285,16 +4367,17 @@ async function createReportPages(title, contentHTML, photos, container, hasSigna
                     <tr style="height: 1px;"><td class="team-role-cell">CONFERENTE</td><td class="team-names-cell" style="vertical-align: top;">${conf}</td></tr>
                     <tr style="height: 1px;"><td class="team-role-cell">OP. EMPILHADEIRA</td><td class="team-names-cell" style="vertical-align: top;">${oper}</td></tr>
                     
-                    <tr class="row-auxiliares">
+                 <tr class="row-auxiliares">
                         <td class="team-role-cell cell-auxiliares">AUXILIARES</td>
                         <td class="team-names-cell cell-auxiliares">${aux}</td>
                     </tr>
                 </table>
-            </td>
-        </tr>
+            </td> 
+        </tr> 
+        
         <tr>
-            <td colspan="2" style="border-top: 1px solid #000; padding: 10px; font-size: 14px; text-align: left;">
-                <span style="font-weight: bold;">OBSERVAÇÃO: </span>${data.obs || ''}
+            <td colspan="2" style="border-top: 1px solid #000; padding: 5px; vertical-align: top; text-align: left !important;">
+                <div style="display: block; width: 100%; font-size: 12px; text-align: left !important; min-height: 50px; height: auto; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap;"><span style="font-weight: bold;">OBSERVAÇÃO: </span>${data.obs || ''}</div>
             </td>
         </tr>
     </table>`;
@@ -4337,10 +4420,10 @@ function createTermoHTML(section, data) {
                     <tr><td class="label-cell">DATA:</td><td class="value-cell">${data.data || ''}</td></tr>
                     <tr><td class="label-cell">CONTAINER:</td><td class="value-cell">${data.container || ''}</td></tr>
                     <tr><td class="label-cell">BL:</td><td class="value-cell">${data.bl || ''}</td></tr>
-                    <tr><td class="label-cell">SERVIÇO:</td><td class="value-cell">${servico}</td></tr>
+                  <tr><td class="label-cell">SERVIÇO:</td><td class="value-cell">${servico}</td></tr>
                     <tr><td class="label-cell">QTD AVARIAS:</td><td class="value-cell">${qtd}</td></tr>
                 </table>
-                <div class="obs-cell-left" style="border-top:1px solid #000; font-size: 14px;">${data.obs || ''}</div>
+                <div style="display: block; width: 100%; box-sizing: border-box; border-top: 1px solid #000; font-size: 12px; padding: 5px; text-align: left !important; min-height: 60px; height: auto; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap;"><span style="font-weight: bold;">OBSERVAÇÃO: </span>${data.obs || ''}</div>
             </td>
             <td class="col-right" rowspan="2">
                 <div class="right-header">TIPO DE AVARIA</div>
@@ -4507,6 +4590,189 @@ function createPesagemSoltaHTML(section, data) {
                 </p>
             </div>
 
+        </div>
+    </div>
+    `;
+}
+
+function createAsmHTML(section) {
+    // 1. CAPTURA OS DADOS DIGITADOS NO FORMULÁRIO
+    const getVal = (seletor) => {
+        const el = section.querySelector(seletor);
+        return el && el.value ? el.value.toUpperCase() : "";
+    };
+
+    const destNome = getVal('.inp-dest-nome');
+    const destCnpj = getVal('.inp-dest-cnpj');
+    const destEnd = getVal('.inp-dest-end');
+    const destMun = getVal('.inp-dest-mun');
+    const destTel = getVal('.inp-dest-tel');
+    const dataSaida = getVal('.inp-data');
+    
+    const motivo = getVal('.inp-asm-motivo');
+    const detalhe = getVal('.inp-asm-detalhe');
+    const transpNome = getVal('.inp-transp-nome');
+    const transpPlaca = getVal('.inp-transp-placa');
+
+    // 2. MONTA A TABELA DE ITENS
+    const linhas = section.querySelectorAll('.asm-item-row');
+    let itensHTML = "";
+    const minLinhas = 8; // Voltou para 8 linhas para preencher a folha A4 corretamente
+    
+    linhas.forEach((linha) => {
+        const desc = linha.querySelector('.inp-item-desc')?.value.toUpperCase() || "";
+        const unid = linha.querySelector('.inp-item-unid')?.value.toUpperCase() || "";
+        const qtd = linha.querySelector('.inp-item-qtd')?.value || "";
+
+        if (desc || qtd) {
+            itensHTML += `
+            <tr style="height: 25px; border-bottom: 1px solid #000;">
+                <td style="border-right: 1px solid #000; padding: 4px;">${desc}</td>
+                <td style="border-right: 1px solid #000; padding: 4px; text-align:center;"></td>
+                <td style="border-right: 1px solid #000; padding: 4px; text-align:center;"></td>
+                <td style="border-right: 1px solid #000; padding: 4px; text-align:center;">${unid}</td>
+                <td style="border-right: 1px solid #000; padding: 4px; text-align:center;">${qtd}</td>
+                <td style="border-right: 1px solid #000; padding: 4px;"></td>
+                <td style="border-right: 1px solid #000; padding: 4px;"></td>
+                <td style="padding: 4px;"></td>
+            </tr>`;
+        }
+    });
+
+    // Completa com linhas vazias
+    const totalItens = linhas.length > 0 ? linhas.length : 0;
+    for (let i = totalItens; i < minLinhas; i++) {
+        itensHTML += `
+            <tr style="height: 25px; border-bottom: 1px solid #000;">
+                <td style="border-right: 1px solid #000;"></td><td style="border-right: 1px solid #000;"></td>
+                <td style="border-right: 1px solid #000;"></td><td style="border-right: 1px solid #000;"></td>
+                <td style="border-right: 1px solid #000;"></td><td style="border-right: 1px solid #000;"></td>
+                <td style="border-right: 1px solid #000;"></td><td></td>
+            </tr>`;
+    }
+
+    // 3. DATA ATUAL POR EXTENSO PARA A ASSINATURA
+    const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+    const hoje = new Date();
+    const dataExtenso = `Salvador, ${hoje.getDate()} de ${meses[hoje.getMonth()]} de ${hoje.getFullYear()}`;
+
+    // 4. RETORNA O HTML DO PDF
+    return `
+    <style>
+        .asm-pdf { font-family: Arial, sans-serif; font-size: 11px; width: 100%; color: #000; background: #fff; padding: 15px 25px; box-sizing: border-box;}
+        .asm-table { width: 100%; border-collapse: collapse; border: 2px solid #000; margin-bottom: 8px; }
+        .asm-table td, .asm-table th { border: 1px solid #000; padding: 4px 6px; vertical-align: top; }
+        .section-header { background-color: #f2f2f2; font-weight: bold; text-align: center; font-size: 11px; padding: 4px; }
+        .box-title { font-size: 9px; font-weight: bold; margin-bottom: 2px; }
+        .box-value { font-size: 12px; font-weight: bold; min-height: 16px;}
+    </style>
+
+    <div class="asm-pdf">
+        <!-- REMETENTE -->
+        <table class="asm-table">
+            <tr><td colspan="4" class="section-header">REMETENTE</td></tr>
+            <tr>
+                <td colspan="2"><div class="box-title">NOME/RAZÃO SOCIAL</div><div class="box-value">TECON SALVADOR S/A</div></td>
+                <td colspan="2"><div class="box-title">CNPJ</div><div class="box-value">03.642.342/0001-01</div></td>
+            </tr>
+            <tr>
+                <td width="40%"><div class="box-title">ENDEREÇO / BAIRRO</div><div class="box-value">R ENGENHEIRO OSCAR PONTES 97 TERREO - AGUA DE MENINOS</div></td>
+                <td width="20%"><div class="box-title">MUNICÍPIO / UF</div><div class="box-value">SALVADOR / BA</div></td>
+                <td width="20%"><div class="box-title">TELEFONE</div><div class="box-value">071-21061549</div></td>
+                <td width="20%"><div class="box-title">INSCRIÇÃO ESTADUAL</div><div class="box-value">ISENTO</div></td>
+            </tr>
+        </table>
+
+        <!-- DESTINATÁRIO -->
+        <table class="asm-table">
+            <tr><td colspan="4" class="section-header">DESTINATÁRIO</td></tr>
+            <tr>
+                <td colspan="3"><div class="box-title">NOME/RAZÃO SOCIAL</div><div class="box-value">${destNome}</div></td>
+                <td width="25%"><div class="box-title">DATA DE SAÍDA</div><div class="box-value">${dataSaida}</div></td>
+            </tr>
+            <tr>
+                <td width="40%"><div class="box-title">ENDEREÇO / BAIRRO</div><div class="box-value">${destEnd}</div></td>
+                <td width="20%"><div class="box-title">MUNICÍPIO / UF</div><div class="box-value">${destMun}</div></td>
+                <td width="20%"><div class="box-title">TELEFONE</div><div class="box-value">${destTel}</div></td>
+                <td width="20%"><div class="box-title">CNPJ / CPF</div><div class="box-value">${destCnpj}</div></td>
+            </tr>
+        </table>
+
+        <!-- ITENS -->
+        <table class="asm-table" style="text-align: center;">
+            <tr><td colspan="8" class="section-header">DADOS DO BEM, MERCADORIA</td></tr>
+            <tr style="font-weight: bold; background-color: #f2f2f2; font-size: 10px;">
+                <td width="40%">DESCRIÇÃO DOS PRODUTOS</td>
+                <td width="5%">S.T</td>
+                <td width="5%">CFOP</td>
+                <td width="10%">UNID</td>
+                <td width="10%">QUANT</td>
+                <td width="10%">UNITÁRIO</td>
+                <td width="10%">VALOR TOTAL</td>
+                <td width="10%">% ICMS</td>
+            </tr>
+            ${itensHTML}
+        </table>
+
+        <!-- CÁLCULO DE IMPOSTO -->
+        <table class="asm-table">
+            <tr><td colspan="6" class="section-header">CÁLCULO DO IMPOSTO</td></tr>
+            <tr style="height: 25px;">
+                <td width="16%"><div class="box-title">BASE DE CÁLCULO ICMS</div></td>
+                <td width="16%"><div class="box-title">VALOR DO ICMS</div></td>
+                <td width="16%"><div class="box-title">BASE CÁLCULO SUBSTIT.</div></td>
+                <td width="16%"><div class="box-title">VALOR DO ICMS SUBST.</div></td>
+                <td width="16%"><div class="box-title">VALOR TOTAL DOS PROD.</div></td>
+                <td width="20%"><div class="box-title">VALOR TOTAL DA NOTA</div></td>
+            </tr>
+        </table>
+
+        <!-- TRANSPORTADOR -->
+        <table class="asm-table">
+            <tr><td colspan="4" class="section-header">TRANSPORTADOR / VOLUMES TRANSPORTADOS</td></tr>
+            <tr>
+                <td colspan="2"><div class="box-title">NOME/RAZÃO SOCIAL</div><div class="box-value">${transpNome}</div></td>
+                <td width="25%"><div class="box-title">PLACA VEÍCULO</div><div class="box-value">${transpPlaca}</div></td>
+                <td width="25%"><div class="box-title">CNPJ/CPF</div><div class="box-value"></div></td>
+            </tr>
+            <tr>
+                <td><div class="box-title">MUNICÍPIO / UF</div><div class="box-value"></div></td>
+                <td><div class="box-title">QUANTIDADE DE VOLUMES</div><div class="box-value"></div></td>
+                <td><div class="box-title">PESO BRUTO</div><div class="box-value"></div></td>
+                <td><div class="box-title">PESO LÍQ.</div><div class="box-value"></div></td>
+            </tr>
+        </table>
+
+        <!-- MOTIVO -->
+        <table class="asm-table">
+            <tr><td colspan="2" class="section-header">MOTIVO DA SAÍDA</td></tr>
+            <tr>
+                <td width="30%">
+                    <div style="margin-bottom: 4px;">[ ${motivo === 'REMESSA P/ CONSERTO' ? 'X' : '&nbsp;&nbsp;'} ] REMESSA P/ CONSERTO</div>
+                    <div style="margin-bottom: 4px;">[ ${motivo === 'DEVOLUÇÃO' ? 'X' : '&nbsp;&nbsp;'} ] DEVOLUÇÃO</div>
+                    <div style="margin-bottom: 4px;">[ ${motivo === 'VENDA DE ATIVO' ? 'X' : '&nbsp;&nbsp;'} ] VENDA DE ATIVO</div>
+                    <div>[ ${motivo === 'OUTROS' ? 'X' : '&nbsp;&nbsp;'} ] OUTRAS SAÍDAS</div>
+                </td>
+                <td width="70%">
+                    <div class="box-title">DETALHAR O MOTIVO DA SAÍDA:</div>
+                    <div class="box-value" style="font-weight: normal; margin-top: 4px;">${detalhe}</div>
+                </td>
+            </tr>
+        </table>
+
+        <!-- ASSINATURAS -->
+        <div style="margin-top: 30px; text-align: center;">
+            <p style="margin-bottom: 40px; font-weight: bold; font-size: 12px;">${dataExtenso}</p>
+            <table style="width: 100%; border: none;">
+                <tr>
+                    <td style="width: 50%; text-align: center; border: none; padding: 0;">
+                        <div style="border-top: 1px solid #000; width: 80%; margin: 0 auto; padding-top: 5px; font-weight: bold; font-size: 11px;">Nome e Assinatura do Solicitante</div>
+                    </td>
+                    <td style="width: 50%; text-align: center; border: none; padding: 0;">
+                        <div style="border-top: 1px solid #000; width: 80%; margin: 0 auto; padding-top: 5px; font-weight: bold; font-size: 11px;">Nome e Assinatura do Gestor</div>
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
     `;
@@ -5482,6 +5748,43 @@ function toggleGenericInput(checkbox, inputSelector) {
             input.disabled = false;
             input.style.backgroundColor = "#fff";
         }
+    }
+}
+function addAsmItem(button) {
+    // Pega a caixinha (container) que segura as linhas
+    const container = button.previousElementSibling; 
+    
+    // Cria uma nova linha idêntica
+    const novaLinha = document.createElement('div');
+    novaLinha.className = 'row asm-item-row';
+    novaLinha.style.alignItems = 'center';
+    novaLinha.innerHTML = `
+        <div class="col" style="flex: 3;"><label>Descrição do Produto:</label><input type="text" class="inp-item-desc"></div>
+        <div class="col" style="flex: 1;"><label>Unidade:</label><input type="text" class="inp-item-unid" placeholder="Ex: UN, CX, KG"></div>
+        <div class="col" style="flex: 1;"><label>Quant.:</label><input type="number" class="inp-item-qtd" min="1"></div>
+        <div style="margin-top: 25px;">
+            <button type="button" class="btn-remove-item" onclick="this.closest('.row').remove()" style="background: #dc3545; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer;">❌</button>
+        </div>
+    `;
+    // Adiciona na tela
+    container.appendChild(novaLinha);
+}
+
+function checkCharLimit(textarea) {
+    // Pega a div do contador que está logo abaixo do textarea
+    const counter = textarea.nextElementSibling;
+    if (!counter) return;
+
+    const max = parseInt(textarea.getAttribute('maxlength')) || 1391;
+    const current = textarea.value.length;
+
+    // Se bater no limite, fica vermelho e dá o alerta. Se não, fica cinza normal.
+    if (current >= max) {
+        counter.style.color = 'red';
+        counter.innerText = `⚠️ Limite máximo atingido! (${current} / ${max})`;
+    } else {
+        counter.style.color = '#666';
+        counter.innerText = `Caracteres: ${current} / ${max}`;
     }
 }
 
